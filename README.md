@@ -34,13 +34,32 @@ build system you use. For example, for Maven itself :-
   until full release*
 
 ```xml
-<dependencies>
-	<dependency>
-		<groupId>com.sshtools</groupId>
-		<artifactId>two-slices</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</dependency>
-</dependencies>
+
+..
+
+	<repositories>
+		<repository>
+			<id>oss-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+	
+..
+
+
+	<dependencies>
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>two-slices</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
 ```
 
 ## Showing A Message
@@ -66,7 +85,7 @@ If you have an SWT application that already has an icon on the tray, you can re-
 settings when the SWT notifier is used.  
 
 ```
-TrayItem item = .....  // this is the reference to your tray item
+TrayItem myTrayItem = .....  // this is the reference to your tray item
 ToasterFactory.setConfiguration(new ToasterSettings().setParent(myTrayItem));
 ```
 

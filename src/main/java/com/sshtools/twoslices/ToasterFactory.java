@@ -3,6 +3,7 @@ package com.sshtools.twoslices;
 import com.sshtools.twoslices.impl.AWTNotifier;
 import com.sshtools.twoslices.impl.GrowlToaster;
 import com.sshtools.twoslices.impl.NotifyToaster;
+import com.sshtools.twoslices.impl.OsXToaster;
 import com.sshtools.twoslices.impl.SWTToaster;
 import com.sshtools.twoslices.impl.SysOutNotifier;
 
@@ -45,12 +46,16 @@ public abstract class ToasterFactory {
 							return instance = new GrowlToaster(configuration);
 						} catch (UnsupportedOperationException uoe2) {
 							try {
-								return instance = new SWTToaster(configuration);
+								return instance = new OsXToaster(configuration);
 							} catch (UnsupportedOperationException uoe3) {
 								try {
-									return instance = new AWTNotifier(configuration);
+									return instance = new SWTToaster(configuration);
 								} catch (UnsupportedOperationException uoe4) {
-									return instance = new SysOutNotifier(configuration);
+									try {
+										return instance = new AWTNotifier(configuration);
+									} catch (UnsupportedOperationException uoe5) {
+										return instance = new SysOutNotifier(configuration);
+									}
 								}
 							}
 						}

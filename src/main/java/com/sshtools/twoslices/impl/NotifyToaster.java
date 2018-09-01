@@ -29,9 +29,9 @@ public class NotifyToaster extends AbstractToaster {
 			Process p = b.start();
 			while ((p.getInputStream().read()) != -1)
 				;
-			if (p.exitValue() != 0)
+			if (p.waitFor() != 0)
 				throw new IOException("Failed to find notify-send.");
-		} catch (IOException ioe) {
+		} catch (IOException | InterruptedException ioe) {
 			throw new UnsupportedOperationException(ioe);
 		}
 	}
@@ -46,7 +46,14 @@ public class NotifyToaster extends AbstractToaster {
 				break;
 			default:
 				args.add("-i");
-				args.add("dialog-" + type.name().toLowerCase());
+				switch(type) {
+				case INFO:
+					args.add("dialog-information");
+					break;
+				default:
+					args.add("dialog-" + type.name().toLowerCase());
+					break;
+				}
 			}
 		} else {
 			args.add("-i");
@@ -58,9 +65,9 @@ public class NotifyToaster extends AbstractToaster {
 			Process p = new ProcessBuilder(args).redirectErrorStream(true).start();
 			while ((p.getInputStream().read()) != -1)
 				;
-			if (p.exitValue() != 0)
+			if (p.waitFor() != 0)
 				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title));
-		} catch (IOException ioe) {
+		} catch (IOException | InterruptedException ioe) {
 			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), ioe);
 		}
 	}

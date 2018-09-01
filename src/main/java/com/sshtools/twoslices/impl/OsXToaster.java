@@ -1,11 +1,10 @@
 package com.sshtools.twoslices.impl;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import java.io.IOException;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterConfiguration;
 import com.sshtools.twoslices.ToasterException;
 
@@ -15,22 +14,19 @@ import com.sshtools.twoslices.ToasterException;
  * separate (paid) app.
  */
 public class OsXToaster extends AbstractToaster {
-
-	private ScriptEngine engine;
-
 	public OsXToaster(ToasterConfiguration configuration) {
 		super(configuration);
+		ProcessBuilder b = new ProcessBuilder("osascript", "-?");
 		try {
-			this.configuration = configuration;
-			//engine = new ScriptEngineManager().getEngineByName("AppleScript");
-			//if(engine == null)
-				engine = new ScriptEngineManager().getEngineByName("AppleScriptEngine");
-
-				return;
-		} catch (Exception e) {
-			e.printStackTrace();
+			b.redirectErrorStream(true);
+			Process p = b.start();
+			while ((p.getInputStream().read()) != -1)
+				;
+			if (p.waitFor() != 2 && p.exitValue() != 0)
+				throw new IOException("Failed to find osascript.");
+		} catch (IOException | InterruptedException ioe) {
+			throw new UnsupportedOperationException(ioe);
 		}
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -42,16 +38,20 @@ public class OsXToaster extends AbstractToaster {
 		script.append("\" with title \"");
 		script.append(escape(t.length() == 0 ? title : (t + " " + title)));
 		script.append("\"");
+		ProcessBuilder b = new ProcessBuilder("osascript", "-e", script.toString());
 		try {
-			engine.eval(script.toString(), engine.getContext());
-		} catch (ScriptException e) {
-			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), e);
+			b.redirectErrorStream(true);
+			Process p = b.start();
+			while ((p.getInputStream().read()) != -1)
+				;
+			if (p.waitFor() != 0)
+				throw new IOException("Failed to find osascript.");
+		} catch (IOException | InterruptedException ioe) {
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), ioe);
 		}
 	}
 
 	private String escape(String text) {
 		return text.replace("\"", "\\\"");
 	}
-
-
 }

@@ -10,6 +10,8 @@ Windows support is currently provided in the following order :-
 
 ## Mac OS X
 
+![](src/web/images/osx-notification-centre.png) ![](src/web/images/osx-swt.png) 
+
 Mac OS X support will be provided in the following order :-
 
  * Growl. If Growl is available, it will be used.
@@ -18,6 +20,8 @@ Mac OS X support will be provided in the following order :-
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used.    
  
 ## Linux
+
+![](src/web/images/linux-notify.png) ![](src/web/images/linux-swt.png)
 
 Linux support will be provided in the following order :-
 

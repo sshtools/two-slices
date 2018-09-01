@@ -31,43 +31,40 @@ import com.sshtools.twoslices.ToasterException;
  * separate (paid) app.
  */
 public class GrowlToaster extends AbstractToaster {
-
 	private static final String GROWL = "com.Growl.GrowlHelperApp";
-
 	private ScriptEngine engine;
 
 	/**
 	 * Constructor
 	 * 
-	 * @param configuration
-	 *            configuration
+	 * @param configuration configuration
 	 */
 	public GrowlToaster(ToasterSettings configuration) {
 		super(configuration);
 		try {
 			engine = new ScriptEngineManager().getEngineByName("AppleScript");
-			if(engine == null)
+			if (engine == null)
 				engine = new ScriptEngineManager().getEngineByName("AppleScriptEngine");
-
-			StringBuilder script = new StringBuilder();
-			script.append("tell application id \"");
-			script.append(GROWL);
-			script.append("\"\n");
-			script.append("set the availableNames to ");
-			script.append(array(ToastType.names()));
-			script.append("\n");
-			script.append("set the enabledNames to ");
-			script.append(array(ToastType.names()));
-			script.append("\n");
-			script.append("register as application \"");
-			script.append(escape(configuration.getAppName()));
-			script.append("\" all notifications availableNames default notifications enabledNames\n");
-			script.append("end tell");
-			engine.eval(script.toString(), engine.getContext());
-			if (canGrowl())
-				return;
+			if (engine != null) {
+				StringBuilder script = new StringBuilder();
+				script.append("tell application id \"");
+				script.append(GROWL);
+				script.append("\"\n");
+				script.append("set the availableNames to ");
+				script.append(array(ToastType.names()));
+				script.append("\n");
+				script.append("set the enabledNames to ");
+				script.append(array(ToastType.names()));
+				script.append("\n");
+				script.append("register as application \"");
+				script.append(escape(configuration.getAppName()));
+				script.append("\" all notifications availableNames default notifications enabledNames\n");
+				script.append("end tell");
+				engine.eval(script.toString(), engine.getContext());
+				if (canGrowl())
+					return;
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		throw new UnsupportedOperationException();
 	}
@@ -116,8 +113,7 @@ public class GrowlToaster extends AbstractToaster {
 
 	private boolean canGrowl() {
 		StringBuilder script = new StringBuilder();
-		script.append(
-				"tell application \"System Events\"\nreturn count of (every process whoe bundle identifier is \"");
+		script.append("tell application \"System Events\"\nreturn count of (every process whoe bundle identifier is \"");
 		script.append(GROWL);
 		script.append(") > 0\nend tell");
 		try {

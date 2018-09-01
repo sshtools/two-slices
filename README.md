@@ -70,7 +70,7 @@ build system you use. For example, for Maven itself :-
 
 For the simplest use, call Toast.toast() :-
 
-```
+```java
 Toast.toast(ToastType.INFO, "Information", "Here is some information you cannot do without.");
 ```
 
@@ -79,7 +79,7 @@ Toast.toast(ToastType.INFO, "Information", "Here is some information you cannot 
 Some settings may be provided to alter the behaviour of the toasters. These are only hints, and specific 
 toasters can ignore any and all of them.  
 
-```
+```java
 ToasterFactory.setConfiguration(new ToasterSettings().setAppName("My App Name"));
 ```
 
@@ -88,7 +88,7 @@ ToasterFactory.setConfiguration(new ToasterSettings().setAppName("My App Name"))
 If you have an SWT application that already has an icon on the tray, you can re-use this for your notification
 settings when the SWT notifier is used.  
 
-```
+```java
 TrayItem myTrayItem = .....  // this is the reference to your tray item
 ToasterFactory.setConfiguration(new ToasterSettings().setParent(myTrayItem));
 ```

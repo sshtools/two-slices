@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
-import com.sshtools.twoslices.ToasterConfiguration;
+import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterException;
 
 /**
@@ -30,7 +30,7 @@ public class AWTNotifier extends AbstractToaster {
 	 * @param configuration
 	 *            configuration
 	 */
-	public AWTNotifier(ToasterConfiguration configuration) {
+	public AWTNotifier(ToasterSettings configuration) {
 		super(configuration);
 		try {
 			Class.forName("java.awt.SystemTray");

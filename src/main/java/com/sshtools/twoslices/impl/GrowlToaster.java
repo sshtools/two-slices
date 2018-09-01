@@ -6,7 +6,8 @@ import javax.script.ScriptException;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
-import com.sshtools.twoslices.ToasterConfiguration;
+import com.sshtools.twoslices.Toaster;
+import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterException;
 
 /**
@@ -26,7 +27,7 @@ public class GrowlToaster extends AbstractToaster {
 	 * @param configuration
 	 *            configuration
 	 */
-	public GrowlToaster(ToasterConfiguration configuration) {
+	public GrowlToaster(ToasterSettings configuration) {
 		super(configuration);
 		try {
 			engine = new ScriptEngineManager().getEngineByName("AppleScript");

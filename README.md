@@ -51,3 +51,23 @@ For the simplest use, call Toast.toast() :-
 Toast.toast(ToastType.INFO, "Information", "Here is some information you cannot do without.");
 ```
 
+## Settings
+
+Some settings may be provided to alter the behaviour of the toasters. These are only hints, and specific 
+toasters can ignore and all of them.  
+
+```
+ToasterFactory.setConfiguration(new ToasterSettings().setAppName("My App Name"));
+```
+
+### SWT
+
+If you have an SWT application that already has an icon on the tray, you can re-use this for your notification
+settings when the SWT notifier is used.  
+
+```
+TrayItem item = .....  // this is the reference to your tray item
+ToasterFactory.setConfiguration(new ToasterSettings().setParent(myTrayItem));
+```
+
+Then, whenever the SWT notifier is used, the balloon message will be anchored to your tray item.

@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
-import com.sshtools.twoslices.ToasterConfiguration;
+import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterException;
 
 /**
@@ -14,7 +14,7 @@ import com.sshtools.twoslices.ToasterException;
  * separate (paid) app.
  */
 public class OsXToaster extends AbstractToaster {
-	public OsXToaster(ToasterConfiguration configuration) {
+	public OsXToaster(ToasterSettings configuration) {
 		super(configuration);
 		ProcessBuilder b = new ProcessBuilder("osascript", "-?");
 		try {

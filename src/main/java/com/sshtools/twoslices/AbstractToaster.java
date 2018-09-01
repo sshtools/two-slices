@@ -2,9 +2,9 @@ package com.sshtools.twoslices;
 
 public abstract class AbstractToaster implements Toaster {
 	
-	protected ToasterConfiguration configuration;
+	protected ToasterSettings configuration;
 
-	protected AbstractToaster(ToasterConfiguration configuration) {
+	protected AbstractToaster(ToasterSettings configuration) {
 		this.configuration = configuration;
 	}
 

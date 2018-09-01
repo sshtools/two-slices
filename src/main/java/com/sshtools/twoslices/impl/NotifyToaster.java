@@ -6,11 +6,11 @@ import java.util.List;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
-import com.sshtools.twoslices.ToasterConfiguration;
+import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterException;
 
 /**
- * Implementation for linux that simply calls the <strong>notify-send</string>
+ * Implementation for linux that simply calls the <strong>notify-send</strong>
  * command, which must be installed.
  */
 public class NotifyToaster extends AbstractToaster {
@@ -21,7 +21,7 @@ public class NotifyToaster extends AbstractToaster {
 	 * @param configuration
 	 *            configuration
 	 */
-	public NotifyToaster(ToasterConfiguration configuration) {
+	public NotifyToaster(ToasterSettings configuration) {
 		super(configuration);
 		ProcessBuilder b = new ProcessBuilder("notify-send", "--help");
 		try {

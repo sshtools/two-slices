@@ -2,7 +2,7 @@ package com.sshtools.twoslices.impl;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
-import com.sshtools.twoslices.ToasterConfiguration;
+import com.sshtools.twoslices.ToasterSettings;
 
 /**
  * Last resort implementation that outputs to the console.
@@ -15,7 +15,7 @@ public class SysOutNotifier extends AbstractToaster {
 	 * @param configuration
 	 *            configuration
 	 */
-	public SysOutNotifier(ToasterConfiguration configuration) {
+	public SysOutNotifier(ToasterSettings configuration) {
 		super(configuration);
 	}
 

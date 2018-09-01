@@ -7,10 +7,11 @@ import com.sshtools.twoslices.impl.SWTToaster;
 
 public class SWTToasterTest {
 	@Test
-	public void testSWT() throws InterruptedException {
+	public void testSWT() {
+		Display display = Display.getDefault();
 		new Thread() {
 			public void run() {
-				SWTToaster toaster = new SWTToaster(new ToasterConfiguration());
+				SWTToaster toaster = new SWTToaster(new ToasterSettings());
 				toaster.toast(ToastType.NONE, "Test Title", "Test Content");
 				try {
 					Thread.sleep(5000);
@@ -24,11 +25,12 @@ public class SWTToasterTest {
 					Thread.sleep(15000);
 				} catch (Exception e) {
 					e.printStackTrace();
+				} finally {
+					display.asyncExec(() -> display.dispose());
 				}
 			}
 		}.start();
-		Display display = Display.getDefault();
-		while (true) {
+		while (!display.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}

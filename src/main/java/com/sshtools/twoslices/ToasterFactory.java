@@ -21,7 +21,7 @@ import com.sshtools.twoslices.impl.SysOutNotifier;
  * directly or using the convenience {@link Toast} class.
  * <p>
  * Configuration hints can be provided to the toaster implementation via
- * {@link #setConfiguration(ToasterConfiguration)}.
+ * {@link #setSettings(ToasterSettings)}.
  *
  */
 public abstract class ToasterFactory {
@@ -40,21 +40,21 @@ public abstract class ToasterFactory {
 			synchronized (lock) {
 				if (instance == null) {
 					try {
-						return instance = new NotifyToaster(configuration);
+						return instance = new NotifyToaster(settings);
 					} catch (UnsupportedOperationException uoe) {
 						try {
-							return instance = new GrowlToaster(configuration);
+							return instance = new GrowlToaster(settings);
 						} catch (UnsupportedOperationException uoe2) {
 							try {
-								return instance = new OsXToaster(configuration);
+								return instance = new OsXToaster(settings);
 							} catch (UnsupportedOperationException uoe3) {
 								try {
-									return instance = new SWTToaster(configuration);
+									return instance = new SWTToaster(settings);
 								} catch (UnsupportedOperationException uoe4) {
 									try {
-										return instance = new AWTNotifier(configuration);
+										return instance = new AWTNotifier(settings);
 									} catch (UnsupportedOperationException uoe5) {
-										return instance = new SysOutNotifier(configuration);
+										return instance = new SysOutNotifier(settings);
 									}
 								}
 							}
@@ -66,7 +66,7 @@ public abstract class ToasterFactory {
 		}
 
 	}
-	private static ToasterConfiguration configuration = new ToasterConfiguration();
+	private static ToasterSettings settings = new ToasterSettings();
 	private static ToasterFactory instance;
 
 	private static Object lock = new Object();
@@ -86,13 +86,23 @@ public abstract class ToasterFactory {
 	}
 
 	/**
-	 * Set configuration hints.
+	 * Set settings hints.
 	 * 
-	 * @param configuration
-	 *            configuration hints
+	 * @param settings
+	 *            settings hints
 	 */
-	public static void setConfiguration(ToasterConfiguration configuration) {
-		ToasterFactory.configuration = configuration;
+	public static void setSettings(ToasterSettings settings) {
+		ToasterFactory.settings = settings;
+	}
+
+	/**
+	 * Get settings hints.
+	 * 
+	 * @return
+	 *            settings hints
+	 */
+	public static ToasterSettings  getSettings() {
+		return ToasterFactory.settings;
 	}
 
 	protected ToasterFactory() {

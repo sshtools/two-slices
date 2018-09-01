@@ -14,30 +14,28 @@ import org.eclipse.swt.widgets.TrayItem;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
-import com.sshtools.twoslices.ToasterConfiguration;
+import com.sshtools.twoslices.ToasterSettings;
 
 /**
  * Fall-back notifier for when no native notifier can be found or used and the
  * SWT toolkit is available.
  * <p>
- * This implementation supports {@link ToasterConfiguration#getParent()} and
- * {@link ToasterConfiguration#setParent(Object)}. The parent object must be an
+ * This implementation supports {@link ToasterSettings#getParent()} and
+ * {@link ToasterSettings#setParent(Object)}. The parent object must be an
  * instance of {@link TrayItem}. When provided, this tray item will be used as
  * the parent of the balloon messages.
  */
 public class SWTToaster extends AbstractToaster {
-
 	/**
 	 * On Linux Cinnamon (probably others?), if we don't wait for a short while
 	 * after the tray item has been added for it to actually be shown on the
-	 * desktop, the position of the balloon will be incorrect, so we have to wait
-	 * for at least this amount of until the first notification message can be
-	 * shown. Subsequent notifications will not need to do this. At no point though
-	 * will the calling thread be held up, the message will just take a short while
-	 * to appear.
+	 * desktop, the position of the balloon will be incorrect, so we have to
+	 * wait for at least this amount of until the first notification message can
+	 * be shown. Subsequent notifications will not need to do this. At no point
+	 * though will the calling thread be held up, the message will just take a
+	 * short while to appear.
 	 */
 	final static int STARTUP_WAIT = 3000;
-
 	private TrayItem item;
 	private Object lock = new Object();
 	private boolean ready;
@@ -45,21 +43,20 @@ public class SWTToaster extends AbstractToaster {
 	private long started;
 	private Thread timer;
 	private ToolTip tip;
+	private Image lastImage;
 
 	/**
 	 * Constructor
 	 * 
 	 * @param configuration configuration
 	 */
-	public SWTToaster(ToasterConfiguration configuration) {
+	public SWTToaster(ToasterSettings configuration) {
 		super(configuration);
 		try {
 			Class.forName("org.eclipse.swt.widgets.Tray");
 			if (!hasTray())
 				throw new UnsupportedOperationException();
-
 			started = System.currentTimeMillis();
-
 			init();
 		} catch (ClassNotFoundException cnfe) {
 			throw new UnsupportedOperationException();
@@ -80,7 +77,6 @@ public class SWTToaster extends AbstractToaster {
 					return;
 				}
 			}
-
 			display.asyncExec(() -> {
 				synchronized (lock) {
 					if (tip == null) {
@@ -93,14 +89,13 @@ public class SWTToaster extends AbstractToaster {
 				}
 			});
 		}
-
 	}
 
 	protected boolean hasTray() {
 		/*
-		 * Check for the tray. This has to be done in the SWT thread. Being as we don't
-		 * know if there is a dispatch thread running, we submit a task and wait a short
-		 * while.
+		 * Check for the tray. This has to be done in the SWT thread. Being as
+		 * we don't know if there is a dispatch thread running, we submit a task
+		 * and wait a short while.
 		 */
 		Display d = Display.getDefault();
 		try {
@@ -120,7 +115,6 @@ public class SWTToaster extends AbstractToaster {
 					sem.release();
 				}
 			} catch (InterruptedException ie) {
-
 			}
 			return result[0];
 		}
@@ -128,16 +122,18 @@ public class SWTToaster extends AbstractToaster {
 
 	private void doShow(ToastType type, String icon, String title, String content, Display display) {
 		tip.setMessage(content);
+		if (configuration.getParent() != null && lastImage == null) {
+			lastImage = item.getImage();
+		}
 		if (icon == null || icon.length() == 0)
-			item.setImage(new Image(display, getClass().getResourceAsStream("/images/dialog-"
-					+ (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png")));
+			item.setImage(new Image(display, getClass().getResourceAsStream(
+					"/images/dialog-" + (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png")));
 		else
 			item.setImage(new Image(display, icon));
 		tip.setText(title);
 		item.setToolTip(tip);
 		tip.setVisible(true);
 		item.setVisible(true);
-
 		timer = new Thread("SWTNotifierWait") {
 			@Override
 			public void run() {
@@ -147,15 +143,22 @@ public class SWTToaster extends AbstractToaster {
 						ToolTip fTip = tip;
 						display.asyncExec(() -> {
 							fTip.dispose();
-							if (configuration.getIdleImage() == null) {
-								item.setVisible(false);
-								ready = false;
-							} else {
-								try {
-									item.setImage(new Image(display, configuration.getIdleImage().openStream()));
-								} catch (IOException e) {
+							if (configuration.getParent() == null) {
+								if (configuration.getIdleImage() == null) {
 									item.setVisible(false);
 									ready = false;
+								} else {
+									try {
+										item.setImage(new Image(display, configuration.getIdleImage().openStream()));
+									} catch (IOException e) {
+										item.setVisible(false);
+										ready = false;
+									}
+								}
+							} else {
+								if (lastImage != null) {
+									item.setImage(lastImage);
+									lastImage = null;
 								}
 							}
 						});

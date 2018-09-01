@@ -19,43 +19,33 @@ public class ToasterTest {
 
 	@Test
 	public void testSWT() throws InterruptedException {
+		new Thread() {
+			public void run() {
+				SWTToaster toaster = new SWTToaster(new ToasterConfiguration());
+				toaster.toast(ToastType.NONE, "Test Title", "Test Content");
+				try {
+					Thread.sleep(5000);
+					toaster.toast(ToastType.ERROR, "Test Error", "Some error");
+					Thread.sleep(5000);
+					toaster.toast(ToastType.INFO, "Test Info", "Some information");
+					Thread.sleep(5000);
+					toaster.toast(ToastType.WARNING, "Test Warning", "Some warning");
+					Thread.sleep(15000);
+					toaster.toast(ToastType.WARNING, "Another Error", "Another error after a longer wait");
+					Thread.sleep(15000);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
 		startSWT();
-		try {
-			SWTToaster toaster = new SWTToaster(new ToasterConfiguration());
-			toaster.toast(ToastType.NONE, "Test Title", "Test Content");
-			Thread.sleep(5000);
-			toaster.toast(ToastType.ERROR, "Test Error", "Some error");
-			Thread.sleep(5000);
-			toaster.toast(ToastType.INFO, "Test Info", "Some information");
-			Thread.sleep(5000);
-			toaster.toast(ToastType.WARNING, "Test Warning", "Some warning");
-			Thread.sleep(15000);
-			toaster.toast(ToastType.WARNING, "Another Error", "Another error after a longer wait");
-			Thread.sleep(15000);
-		} finally {
-			stopSWT();
-		}
 	}
 
 	void startSWT() {
-		swtThread = new Thread() {
-			@Override
-			public void run() {
-				Display display = Display.getDefault();
-				try {
-					while (true) {
-						if (!display.readAndDispatch())
-							display.sleep();
-					}
-				} finally {
-					display.dispose();
-				}
-			}
-		};
-		swtThread.start();
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
+		Display display = Display.getDefault();
+		while (true) {
+			if (!display.readAndDispatch())
+				display.sleep();
 		}
 	}
 

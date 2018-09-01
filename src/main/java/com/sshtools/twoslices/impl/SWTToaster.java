@@ -5,6 +5,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -48,8 +49,7 @@ public class SWTToaster extends AbstractToaster {
 	/**
 	 * Constructor
 	 * 
-	 * @param configuration
-	 *            configuration
+	 * @param configuration configuration
 	 */
 	public SWTToaster(ToasterConfiguration configuration) {
 		super(configuration);
@@ -103,23 +103,27 @@ public class SWTToaster extends AbstractToaster {
 		 * while.
 		 */
 		Display d = Display.getDefault();
-		final boolean[] result = new boolean[1];
-		final Semaphore sem = new Semaphore(1);
 		try {
-			sem.acquire();
+			return d != null && d.getSystemTray() != null;
+		} catch (SWTException e) {
+			final boolean[] result = new boolean[1];
+			final Semaphore sem = new Semaphore(1);
 			try {
-				d.asyncExec(() -> {
-					result[0] = d != null && d.getSystemTray() != null;
+				sem.acquire();
+				try {
+					d.asyncExec(() -> {
+						result[0] = d != null && d.getSystemTray() != null;
+						sem.release();
+					});
+					sem.tryAcquire(250, TimeUnit.MILLISECONDS);
+				} finally {
 					sem.release();
-				});
-				sem.tryAcquire(250, TimeUnit.MILLISECONDS);
-			} finally {
-				sem.release();
-			}
-		} catch (InterruptedException ie) {
+				}
+			} catch (InterruptedException ie) {
 
+			}
+			return result[0];
 		}
-		return result[0];
 	}
 
 	private void doShow(ToastType type, String icon, String title, String content, Display display) {

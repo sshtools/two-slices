@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
@@ -46,11 +46,11 @@ public class SWTToaster extends AbstractToaster {
 	/**
 	 * On Linux Cinnamon (probably others?), if we don't wait for a short while
 	 * after the tray item has been added for it to actually be shown on the
-	 * desktop, the position of the balloon will be incorrect, so we have to wait
-	 * for at least this amount of until the first notification message can be
-	 * shown. Subsequent notifications will not need to do this. At no point though
-	 * will the calling thread be held up, the message will just take a short while
-	 * to appear.
+	 * desktop, the position of the balloon will be incorrect, so we have to
+	 * wait for at least this amount of until the first notification message can
+	 * be shown. Subsequent notifications will not need to do this. At no point
+	 * though will the calling thread be held up, the message will just take a
+	 * short while to appear.
 	 */
 	final static int STARTUP_WAIT = 3000;
 	private TrayItem item;
@@ -66,8 +66,7 @@ public class SWTToaster extends AbstractToaster {
 	/**
 	 * Constructor
 	 * 
-	 * @param configuration
-	 *            configuration
+	 * @param configuration configuration
 	 */
 	public SWTToaster(ToasterSettings configuration) {
 		super(configuration);
@@ -129,9 +128,9 @@ public class SWTToaster extends AbstractToaster {
 
 	protected boolean hasTray() {
 		/*
-		 * Check for the tray. This has to be done in the SWT thread. Being as we don't
-		 * know if there is a dispatch thread running, we submit a task and wait a short
-		 * while.
+		 * Check for the tray. This has to be done in the SWT thread. Being as
+		 * we don't know if there is a dispatch thread running, we submit a task
+		 * and wait a short while.
 		 */
 		Display d = Display.getDefault();
 		try {
@@ -139,7 +138,6 @@ public class SWTToaster extends AbstractToaster {
 				return false;
 		} catch (SWTException e) {
 		}
-
 		final boolean[] result = new boolean[1];
 		final Semaphore sem = new Semaphore(1);
 		try {
@@ -232,28 +230,23 @@ public class SWTToaster extends AbstractToaster {
 			sz = 16;
 		else if (osname.toLowerCase().indexOf("linux") != -1)
 			sz = 24;
-
-		Image img = new Image(image.getDevice(), sz, sz);
-		GC gc = new GC(img);
-		gc.setAntialias(SWT.ON);
-		gc.setInterpolation(SWT.HIGH);
-		gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, 0, 0, sz, sz);
+		ImageData data = image.getImageData();
+		data = data.scaledTo(sz, sz);
+		Image img = new Image(image.getDevice(), data, data);
 		image.dispose();
 		return img;
 	}
 
 	private Image getTypeImage(ToastType type) throws IOException {
 		Display d = Display.getDefault();
-
 		if (configuration.getSystemTrayIconMode() == SystemTrayIconMode.HIDDEN) {
-			return new Image(d, getClass().getResourceAsStream("/images/blank-48.png"));
-		} else if (type == null
-				|| ((configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE
-						|| configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_ALWAYS)
-						&& configuration.getDefaultImage() != null)) {
+			return new Image(d, getClass().getResourceAsStream("/images/blank-48.gif"));
+		} else if (type == null || ((configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE
+				|| configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_ALWAYS)
+				&& configuration.getDefaultImage() != null)) {
 			return new Image(d, configuration.getDefaultImage().openStream());
 		} else
-			return new Image(d, getClass().getResourceAsStream("/images/dialog-"
-					+ (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png"));
+			return new Image(d, getClass().getResourceAsStream(
+					"/images/dialog-" + (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png"));
 	}
 }

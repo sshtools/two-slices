@@ -74,6 +74,8 @@ public class NotifyToaster extends AbstractToaster {
 			args.add("-i");
 			args.add(icon);
 		}
+		args.add("-t");
+		args.add(String.valueOf(configuration.getTimeout() * 1000));
 		args.add(title);
 		args.add(content);
 		try {

@@ -21,34 +21,41 @@ package com.sshtools.twoslices;
  * Instead use the convenience class {@link Toast}.
  */
 public interface Toaster {
+	/**
+	 * Return if actions are supported. If so, a {@link ToastActionListener} may
+	 * be provided to both
+	 * {@link #toast(ToastType, String, String, ToastActionListener...)} and
+	 * {@link #toast(ToastType, String, String, String, ToastActionListener...)}.
+	 * If actions are not supported, the listeners will be silently ignored.
+	 * 
+	 * @return actions are supported
+	 */
+	boolean isActionsSupported();
 
 	/**
 	 * Display a notification message.
 	 * 
-	 * @param type
-	 *            type of message
-	 * @param title
-	 *            title of message
-	 * @param content
-	 *            content of message
-	 * @throws ToasterException
-	 *             if there is a serious unrecoverable error.
+	 * @param type type of message
+	 * @param title title of message
+	 * @param content content of message
+	 * @param listeners optional array of listeners that will be invoked if the
+	 *            toast is clicked. If actions are not supported, the listeners
+	 *            will be silently ignored.
+	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
-	void toast(ToastType type, String title, String content);
+	void toast(ToastType type, String title, String content, ToastActionListener... listeners);
 
 	/**
 	 * Display a notification message.
 	 * 
-	 * @param type
-	 *            type of message
-	 * @param icon
-	 *            icon hint
-	 * @param title
-	 *            title of message
-	 * @param content
-	 *            content of message
-	 * @throws ToasterException
-	 *             if there is a serious unrecoverable error.
+	 * @param type type of message
+	 * @param icon icon hint
+	 * @param title title of message
+	 * @param content content of message
+	 * @param listeners optional array of listeners that will be invoked if the
+	 *            toast is clicked. If actions are not supported, the listeners
+	 *            will be silently ignored.
+	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
-	void toast(ToastType type, String icon, String title, String content);
+	void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners);
 }

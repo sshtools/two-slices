@@ -16,6 +16,7 @@
 package com.sshtools.twoslices.impl;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
 
@@ -35,7 +36,7 @@ public class SysOutNotifier extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content) {
+	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
 		System.out.println(String.format("[%1s] %s - %s", textIcon(type), title, content));
 	}
 

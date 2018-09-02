@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.TrayItem;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
@@ -82,7 +83,7 @@ public class SWTToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content) {
+	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
 		synchronized (lock) {
 			Display display = Display.getDefault();
 			if (!ready) {
@@ -157,7 +158,7 @@ public class SWTToaster extends AbstractToaster {
 		return result[0];
 	}
 
-	private void doShow(ToastType type, String icon, String title, String content, Display display) {
+	private void doShow(ToastType type, String icon, String title, String content, Display display, ToastActionListener... listeners) {
 		tip.setMessage(content);
 		if (configuration.getParent() != null && lastImage == null) {
 			lastImage = item.getImage();

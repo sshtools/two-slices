@@ -26,6 +26,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
@@ -58,7 +59,7 @@ public class AWTNotifier extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content) {
+	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
 		final SystemTray tray = SystemTray.getSystemTray();
 		EventQueue.invokeLater(() -> {
 			try {

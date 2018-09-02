@@ -20,6 +20,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterSettings;
@@ -70,7 +71,7 @@ public class GrowlToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content) {
+	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
 		String t = textIcon(type);
 		StringBuilder script = new StringBuilder();
 		script.append("tell application id \"");

@@ -18,6 +18,7 @@ package com.sshtools.twoslices.impl;
 import java.io.IOException;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterSettings;
@@ -45,7 +46,7 @@ public class OsXToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content) {
+	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
 		String t = textIcon(type);
 		StringBuilder script = new StringBuilder();
 		script.append("display notification \"");

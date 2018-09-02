@@ -24,8 +24,14 @@ public abstract class AbstractToaster implements Toaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String title, String content) {
-		toast(type, null, title, content);
+	public boolean isActionsSupported() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void toast(ToastType type, String title, String content, ToastActionListener... listeners) {
+		toast(type, null, title, content, listeners);
 	}
 
 	protected String textIcon(ToastType messageType) {

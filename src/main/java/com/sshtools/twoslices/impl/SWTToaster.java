@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -30,6 +31,7 @@ import org.eclipse.swt.widgets.TrayItem;
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
+import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
 
 /**
  * Fall-back notifier for when no native notifier can be found or used and the
@@ -44,11 +46,11 @@ public class SWTToaster extends AbstractToaster {
 	/**
 	 * On Linux Cinnamon (probably others?), if we don't wait for a short while
 	 * after the tray item has been added for it to actually be shown on the
-	 * desktop, the position of the balloon will be incorrect, so we have to
-	 * wait for at least this amount of until the first notification message can
-	 * be shown. Subsequent notifications will not need to do this. At no point
-	 * though will the calling thread be held up, the message will just take a
-	 * short while to appear.
+	 * desktop, the position of the balloon will be incorrect, so we have to wait
+	 * for at least this amount of until the first notification message can be
+	 * shown. Subsequent notifications will not need to do this. At no point though
+	 * will the calling thread be held up, the message will just take a short while
+	 * to appear.
 	 */
 	final static int STARTUP_WAIT = 3000;
 	private TrayItem item;
@@ -59,11 +61,13 @@ public class SWTToaster extends AbstractToaster {
 	private Thread timer;
 	private ToolTip tip;
 	private Image lastImage;
+	private int lastSwtCode;
 
 	/**
 	 * Constructor
 	 * 
-	 * @param configuration configuration
+	 * @param configuration
+	 *            configuration
 	 */
 	public SWTToaster(ToasterSettings configuration) {
 		super(configuration);
@@ -94,8 +98,12 @@ public class SWTToaster extends AbstractToaster {
 			}
 			display.asyncExec(() -> {
 				synchronized (lock) {
-					if (tip == null) {
-						tip = new ToolTip(shell, SWT.BALLOON | SWT.ICON_INFORMATION);
+					int swtCode = typeToSWTCode(type);
+					if (tip == null || swtCode != lastSwtCode) {
+						if (tip != null)
+							tip.dispose();
+						tip = new ToolTip(shell, SWT.BALLOON | swtCode);
+						lastSwtCode = swtCode;
 						tip.setAutoHide(false);
 					} else {
 						timer.interrupt();
@@ -106,33 +114,49 @@ public class SWTToaster extends AbstractToaster {
 		}
 	}
 
+	private int typeToSWTCode(ToastType type) {
+		switch (type) {
+		case ERROR:
+			return SWT.ICON_ERROR;
+		case WARNING:
+			return SWT.ICON_WARNING;
+		case NONE:
+			return SWT.NONE;
+		default:
+			return SWT.ICON_INFORMATION;
+		}
+	}
+
 	protected boolean hasTray() {
 		/*
-		 * Check for the tray. This has to be done in the SWT thread. Being as
-		 * we don't know if there is a dispatch thread running, we submit a task
-		 * and wait a short while.
+		 * Check for the tray. This has to be done in the SWT thread. Being as we don't
+		 * know if there is a dispatch thread running, we submit a task and wait a short
+		 * while.
 		 */
 		Display d = Display.getDefault();
 		try {
-			return d != null && d.getSystemTray() != null;
+			if (d == null || d.getSystemTray() == null)
+				return false;
 		} catch (SWTException e) {
-			final boolean[] result = new boolean[1];
-			final Semaphore sem = new Semaphore(1);
-			try {
-				sem.acquire();
-				try {
-					d.asyncExec(() -> {
-						result[0] = d != null && d.getSystemTray() != null;
-						sem.release();
-					});
-					sem.tryAcquire(250, TimeUnit.MILLISECONDS);
-				} finally {
-					sem.release();
-				}
-			} catch (InterruptedException ie) {
-			}
-			return result[0];
 		}
+
+		final boolean[] result = new boolean[1];
+		final Semaphore sem = new Semaphore(1);
+		try {
+			sem.acquire();
+			try {
+				d.asyncExec(() -> {
+					result[0] = d != null && d.getSystemTray() != null;
+					sem.release();
+				});
+				sem.tryAcquire(250, TimeUnit.MILLISECONDS);
+			} finally {
+				sem.release();
+			}
+		} catch (InterruptedException ie) {
+		} catch (SWTException se) {
+		}
+		return result[0];
 	}
 
 	private void doShow(ToastType type, String icon, String title, String content, Display display) {
@@ -141,10 +165,17 @@ public class SWTToaster extends AbstractToaster {
 			lastImage = item.getImage();
 		}
 		if (icon == null || icon.length() == 0)
-			item.setImage(new Image(display, getClass().getResourceAsStream(
-					"/images/dialog-" + (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png")));
+			try {
+				item.setImage(getPlatformImage(getTypeImage(type)));
+			} catch (IOException e1) {
+				try {
+					item.setImage(getPlatformImage(getTypeImage(null)));
+				} catch (IOException e) {
+					// Give up
+				}
+			}
 		else
-			item.setImage(new Image(display, icon));
+			item.setImage(getPlatformImage(new Image(display, icon)));
 		tip.setText(title);
 		item.setToolTip(tip);
 		tip.setVisible(true);
@@ -157,18 +188,14 @@ public class SWTToaster extends AbstractToaster {
 					synchronized (lock) {
 						ToolTip fTip = tip;
 						display.asyncExec(() -> {
-							fTip.dispose();
+							if (fTip != null)
+								fTip.dispose();
 							if (configuration.getParent() == null) {
-								if (configuration.getIdleImage() == null) {
+								try {
+									item.setImage(getPlatformImage(getTypeImage(null)));
+								} catch (IOException e) {
 									item.setVisible(false);
 									ready = false;
-								} else {
-									try {
-										item.setImage(new Image(display, configuration.getIdleImage().openStream()));
-									} catch (IOException e) {
-										item.setVisible(false);
-										ready = false;
-									}
 								}
 							} else {
 								if (lastImage != null) {
@@ -196,5 +223,37 @@ public class SWTToaster extends AbstractToaster {
 			}
 			shell = new Shell(display, SWT.NONE);
 		});
+	}
+
+	private Image getPlatformImage(Image image) {
+		String osname = System.getProperty("os.name");
+		int sz = 48;
+		if (osname.toLowerCase().indexOf("windows") != -1)
+			sz = 16;
+		else if (osname.toLowerCase().indexOf("linux") != -1)
+			sz = 24;
+
+		Image img = new Image(image.getDevice(), sz, sz);
+		GC gc = new GC(img);
+		gc.setAntialias(SWT.ON);
+		gc.setInterpolation(SWT.HIGH);
+		gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, 0, 0, sz, sz);
+		image.dispose();
+		return img;
+	}
+
+	private Image getTypeImage(ToastType type) throws IOException {
+		Display d = Display.getDefault();
+
+		if (configuration.getSystemTrayIconMode() == SystemTrayIconMode.HIDDEN) {
+			return new Image(d, getClass().getResourceAsStream("/images/blank-48.png"));
+		} else if (type == null
+				|| ((configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE
+						|| configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_ALWAYS)
+						&& configuration.getDefaultImage() != null)) {
+			return new Image(d, configuration.getDefaultImage().openStream());
+		} else
+			return new Image(d, getClass().getResourceAsStream("/images/dialog-"
+					+ (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png"));
 	}
 }

@@ -3,6 +3,8 @@ Simple library for desktop notifications from Java on Windows, Mac OS X and Linu
 
 ## Windows
 
+![](src/web/images/windows-awt.png) ![](src/web/images/windows-swt.png)
+
 Windows support is currently provided in the following order :-
 
  * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
@@ -94,11 +96,15 @@ ToasterFactory.setSettings(new ToasterSettings().setAppName("My App Name"));
 ### SWT
 
 If you have an SWT application that already has an icon on the tray, you can re-use this for your notification
-settings when the SWT notifier is used.  
+settings when the SWT notifier is used.
+
+* For SWT, you must already be running an event loop (see SWT toolkit documentation). At the moment it 
+  is not possible to automatically start a loop mainly due to restrictions on OS X where SWT must be
+  on the main thread. *
 
 ```java
 TrayItem myTrayItem = .....  // this is the reference to your tray item
-ToasterFactory.setsetSettings(new ToasterSettings().setParent(myTrayItem));
+ToasterFactory.setSettings(new ToasterSettings().setParent(myTrayItem));
 ```
 
 Then, whenever the SWT notifier is used, the balloon message will be anchored to your tray item.

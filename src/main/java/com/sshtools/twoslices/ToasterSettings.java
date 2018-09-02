@@ -28,14 +28,21 @@ import com.sshtools.twoslices.impl.SWTToaster;
  * @see ToasterFactory#setSettings(ToasterSettings)
  */
 public class ToasterSettings {
+	
+
+	public enum SystemTrayIconMode {
+		HIDDEN, SHOW_TOAST_TYPE_WHEN_ACTIVE, SHOW_DEFAULT_WHEN_ACTIVE, SHOW_DEFAULT_ALWAYS
+	}
+	
 	private String appName = "TwoSlices";
 	private Object parent;
 	private int timeout = 10;
-	private URL idleImage;
+	private URL defaultImage;
+	private SystemTrayIconMode systemTrayIconMode = SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE; 
 
 	public ToasterSettings() {
 		try {
-			idleImage = getClass().getResource("/images/idle-48.png");
+			defaultImage = getClass().getResource("/images/idle-48.png");
 		} catch (Exception e) {
 		}
 	}
@@ -117,30 +124,58 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Set the idle image that might be displayed when there are no messages.
+	 * Set the default image that might be displayed depending on {@link #getSystemTrayIconMode()}.
 	 * Some implementations require an item on the <i>System tray</i> to be
 	 * able to show messages, and may even require the icon is permanently
 	 * visible for proper operation (such as SWT).
 	 * 
-	 * @param idleImage the location of the idle image.
+	 * @param defaultImage the location of the default image.
 	 * @return this instance for chaining
-	 * @see #getIdleImage()
+	 * @see #getDefaultImage()
 	 */
-	public ToasterSettings setIdleImage(URL idleImage) {
-		this.idleImage = idleImage;
+	public ToasterSettings setDefaultImage(URL defaultImage) {
+		this.defaultImage = defaultImage;
 		return this;
 	}
 
 	/**
-	 * Get the idle image that might be displayed when there are no messages.
+	 * Get the default image that might be displayed depending on the .
 	 * Some implementations require an item on the <i>System tray</i> to be
 	 * able to show messages, and may even require the icon is permanently
-	 * visible for proper operation (such as SWT).
+	 * visible for proper operation (such as SWT). 
 	 * 
-	 * @return the location of the idle image.
-	 * @see #setIdleImage(URL)
+	 * @return the location of the default image.
+	 * @see #setDefaultImage(URL)
+	 * @see #getSystemTrayIconMode()
 	 */
-	public URL getIdleImage() {
-		return idleImage;
+	public URL getDefaultImage() {
+		return defaultImage;
 	}
+
+	/**
+	 * Get the hint as to how to treat the system tray icon (if one is needed for
+	 * the platform in use.)
+	 * 
+	 * @return system tray icon mode
+	 * @see #getDefaultImage()
+	 * @see #setSystemTrayIconMode(SystemTrayIconMode)
+	 */
+	public SystemTrayIconMode getSystemTrayIconMode() {
+		return systemTrayIconMode;
+	}
+
+
+	/**
+	 * Set the hint as to how to treat the system tray icon (if one is needed for
+	 * the platform in use.)
+	 * 
+	 * @param systemTrayIconMode system tray icon mode
+	 * @see #getDefaultImage()
+	 * @see #getSystemTrayIconMode()
+	 */
+	public void setSystemTrayIconMode(SystemTrayIconMode systemTrayIconMode) {
+		this.systemTrayIconMode = systemTrayIconMode;
+	}
+	
+	
 }

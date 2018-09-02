@@ -31,12 +31,12 @@ public class SWTToasterTest {
 				try {
 					Thread.sleep(5000);
 					toaster.toast(ToastType.ERROR, "Test Error", "Some error");
-					Thread.sleep(5000);
+					Thread.sleep(15000);
 					toaster.toast(ToastType.INFO, "Test Info", "Some information");
 					Thread.sleep(5000);
 					toaster.toast(ToastType.WARNING, "Test Warning", "Some warning");
 					Thread.sleep(15000);
-					toaster.toast(ToastType.WARNING, "Another Error", "Another error after a longer wait");
+					toaster.toast(ToastType.ERROR, "Another Error", "Another error after a longer wait");
 					Thread.sleep(15000);
 				} catch (Exception e) {
 					e.printStackTrace();

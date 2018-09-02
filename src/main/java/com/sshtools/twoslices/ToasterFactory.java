@@ -55,21 +55,21 @@ public abstract class ToasterFactory {
 			synchronized (lock) {
 				if (instance == null) {
 					try {
-						return instance = new NotifyToaster(settings);
+						instance = new NotifyToaster(settings);
 					} catch (UnsupportedOperationException uoe) {
 						try {
-							return instance = new GrowlToaster(settings);
+							instance = new GrowlToaster(settings);
 						} catch (UnsupportedOperationException uoe2) {
 							try {
-								return instance = new OsXToaster(settings);
+								instance = new OsXToaster(settings);
 							} catch (UnsupportedOperationException uoe3) {
 								try {
-									return instance = new SWTToaster(settings);
+									instance = new SWTToaster(settings);
 								} catch (UnsupportedOperationException uoe4) {
 									try {
-										return instance = new AWTNotifier(settings);
+										instance = new AWTNotifier(settings);
 									} catch (UnsupportedOperationException uoe5) {
-										return instance = new SysOutNotifier(settings);
+										instance = new SysOutNotifier(settings);
 									}
 								}
 							}

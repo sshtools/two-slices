@@ -28,6 +28,7 @@ import javax.imageio.ImageIO;
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
+import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
 import com.sshtools.twoslices.ToasterException;
 
 /**
@@ -62,15 +63,21 @@ public class AWTNotifier extends AbstractToaster {
 		EventQueue.invokeLater(() -> {
 			try {
 				if (trayIcon == null) {
-					if (icon == null || icon.length() == 0)
-						trayIcon = new TrayIcon(ImageIO.read(getClass().getResource("/images/dialog-"
-								+ (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase()
-								+ "-48.png")).getScaledInstance(24, 24, Image.SCALE_SMOOTH), title);
+					if (configuration.getParent() != null) {
+						trayIcon = (TrayIcon) configuration.getParent();
+					} else if (icon == null || icon.length() == 0)
+						trayIcon = new TrayIcon(getPlatformImage(getTypeImage(type)), title);
 					else
-						trayIcon = new TrayIcon(ImageIO.read(new File(icon)), title);
+						trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(icon))), title);
 					tray.add(trayIcon);
 				} else {
-					timer.interrupt();
+					if (icon == null || icon.length() == 0) {
+						trayIcon.setImage(getPlatformImage(getTypeImage(type)));
+					} else
+						trayIcon.setImage(getPlatformImage(ImageIO.read(new File(icon))));
+					trayIcon.setToolTip(title);
+					if(timer != null)
+						timer.interrupt();
 				}
 				trayIcon.displayMessage(title, content, TrayIcon.MessageType.valueOf(type.name()));
 				timer = new Thread("AWTNotifierWait") {
@@ -79,8 +86,12 @@ public class AWTNotifier extends AbstractToaster {
 						try {
 							Thread.sleep(configuration.getTimeout() * 1000);
 							timer = null;
-							tray.remove(trayIcon);
-							trayIcon = null;
+							if (configuration.getSystemTrayIconMode() != SystemTrayIconMode.SHOW_DEFAULT_ALWAYS) {
+								if (configuration.getParent() == null) {
+									tray.remove(trayIcon);
+								}
+								trayIcon = null;
+							}
 						} catch (InterruptedException ie) {
 							// New one coming in
 						}
@@ -93,6 +104,32 @@ public class AWTNotifier extends AbstractToaster {
 				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), e);
 			}
 		});
+	}
+
+	private Image getPlatformImage(Image image) throws IOException {
+		String osname = System.getProperty("os.name");
+		int sz = 48;
+		if (osname.toLowerCase().indexOf("windows") != -1)
+			sz = 16;
+		else if (osname.toLowerCase().indexOf("linux") != -1)
+			sz = 24;
+		return image.getScaledInstance(sz, sz, Image.SCALE_SMOOTH);
+	}
+
+	private Image getTypeImage(ToastType type) throws IOException {
+		if (configuration.getSystemTrayIconMode() == SystemTrayIconMode.HIDDEN) {
+			String osname = System.getProperty("os.name");
+			if (osname.toLowerCase().indexOf("windows") != -1)
+				return ImageIO.read(getClass().getResource("/images/blank-48.gif"));
+			else
+				return ImageIO.read(getClass().getResource("/images/blank-48.png"));
+		} else if ((configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE
+				|| configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_ALWAYS)
+				&& configuration.getDefaultImage() != null) {
+			return ImageIO.read(configuration.getDefaultImage());
+		} else
+			return ImageIO.read(getClass().getResource("/images/dialog-"
+					+ (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png"));
 	}
 
 	private boolean hasTray() {

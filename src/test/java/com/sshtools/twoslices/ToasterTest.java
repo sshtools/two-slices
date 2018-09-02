@@ -21,8 +21,8 @@ public class ToasterTest {
 	@Test
 	public void testToast() throws InterruptedException {
 		Thread.sleep(5000);
-		Toast.toast(ToastType.ERROR, "Test Error", "Some error");
-		Thread.sleep(5000);
+		Toast.toast(ToastType.ERROR, "Error", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum");
+		Thread.sleep(15000);
 		Toast.toast(ToastType.INFO, "Test Info", "Some information");
 		Thread.sleep(5000);
 		Toast.toast(ToastType.WARNING, "Test Warning", "Some warning");

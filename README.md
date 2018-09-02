@@ -36,8 +36,7 @@ Linux support will be provided in the following order :-
 The library is available in Maven Central, so configure your project according to the
 build system you use. For example, for Maven itself :-
 
-* Note, currently only available on Snapshots repository so you'll need to add that first 
-  until full release*
+*Note, currently only available on Snapshots repository so you'll need to add that first until full release*
 
 ```xml
 
@@ -98,9 +97,7 @@ ToasterFactory.setSettings(new ToasterSettings().setAppName("My App Name"));
 If you have an SWT application that already has an icon on the tray, you can re-use this for your notification
 settings when the SWT notifier is used.
 
-* For SWT, you must already be running an event loop (see SWT toolkit documentation). At the moment it 
-  is not possible to automatically start a loop mainly due to restrictions on OS X where SWT must be
-  on the main thread. *
+*For SWT, you must already be running an event loop (see SWT toolkit documentation). At the moment it is not possible to automatically start a loop mainly due to restrictions on OS X where SWT must be on the main thread.*
 
 ```java
 TrayItem myTrayItem = .....  // this is the reference to your tray item

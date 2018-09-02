@@ -15,6 +15,13 @@
  */
 package com.sshtools.twoslices.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -23,8 +30,8 @@ import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
-import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterSettings;
 
 /**
  * Implementation of a {@link Toaster} when running on Mac OS X with Growl
@@ -34,6 +41,7 @@ import com.sshtools.twoslices.ToasterException;
 public class GrowlToaster extends AbstractToaster {
 	private static final String GROWL = "com.Growl.GrowlHelperApp";
 	private ScriptEngine engine;
+	private Map<String, File> resourceIcons = new HashMap<>();
 
 	/**
 	 * Constructor
@@ -72,7 +80,6 @@ public class GrowlToaster extends AbstractToaster {
 
 	@Override
 	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
-		String t = textIcon(type);
 		StringBuilder script = new StringBuilder();
 		script.append("tell application id \"");
 		script.append(GROWL);
@@ -80,16 +87,51 @@ public class GrowlToaster extends AbstractToaster {
 		script.append("notify with name \"");
 		script.append(type.name());
 		script.append("\" title \"");
-		script.append(escape(t.length() == 0 ? title : (t + " " + title)));
+		script.append(escape(title));
 		script.append("\" description \"");
 		script.append(escape(content));
 		script.append("\" application name \"");
 		script.append(escape(configuration.getAppName()));
+		if(icon == null || icon.length() == 0) {
+			script.append("\" image from location \"file://");
+			script.append(getFileForType(type).getAbsolutePath().toString());
+		}
+		else {
+			script.append("\" image from location \"file://");
+			script.append(new File(icon).getAbsolutePath());
+		}
 		script.append("\"\nend tell");
 		try {
 			engine.eval(script.toString(), engine.getContext());
 		} catch (ScriptException e) {
 			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), e);
+		}
+	}
+	
+	private File getFileForType(ToastType type) {
+		synchronized(resourceIcons) {
+			String key = type == null ? "" : type.name();
+			File v = resourceIcons.get(key);
+			if(v == null) {
+				try {
+					File f = File.createTempFile("two-slices", ".png");
+					f.deleteOnExit();
+					try(InputStream in = getClass().getResourceAsStream("/images/" + (type == null ? "idle-48.png" : ("dialog-" + type.name().toLowerCase() + "-48.png")))) {
+						try(FileOutputStream out = new FileOutputStream(f)) {
+							byte[] buf = new byte[65536];
+							int r;
+							while( ( r = in.read(buf)) != -1) {
+								out.write(buf, 0, r);
+							}
+							out.flush();
+						}
+					}
+					resourceIcons.put(key, v = f);
+				} catch (IOException e) {
+					
+				}
+			}
+			return v;
 		}
 	}
 
@@ -114,9 +156,9 @@ public class GrowlToaster extends AbstractToaster {
 
 	private boolean canGrowl() {
 		StringBuilder script = new StringBuilder();
-		script.append("tell application \"System Events\"\nreturn count of (every process whoe bundle identifier is \"");
+		script.append("tell application \"System Events\"\nreturn count of (every process whose bundle identifier is \"");
 		script.append(GROWL);
-		script.append(") > 0\nend tell");
+		script.append("\") > 0\nend tell");
 		try {
 			return (Long) engine.eval(script.toString(), engine.getContext()) > 0;
 		} catch (ScriptException e) {

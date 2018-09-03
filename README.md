@@ -1,9 +1,15 @@
 # two-slices
 Simple library for desktop notifications from Java on Windows, Mac OS X and Linux.
+ 
+ * One-line of code to show a notification for most cases
+ * Tries to find the best implementation available to give the best looking and most integrated experience.
+ * No hard dependencies, although can be augmented with SWT to provide further options.
+ * Supports NONE, INFO, ERROR and WARNING notifications types, each with it's own icon.
+ * Supports custom icons
 
 ## All Platforms
 
-All platforms support the GNTP protocol. If you have have Growl for Mac OS X, Linux or Windows installed, running on listening on the default port, it will be used in preference to all platform specific notification systems.
+All platforms support Growls GNTP protocol. If you have have Growl for Mac OS X, Linux or Windows installed, running on listening on the default port, it will be used in preference to all platform specific notification systems.
 
 Additionally on all platforms, if no notifier implementation can be found, the last resort fallback will be to display the messages on *System.out*.
 

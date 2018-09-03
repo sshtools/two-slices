@@ -35,7 +35,6 @@ public enum ToastType {
 	 * Warning
 	 */
 	WARNING;
-
 	/**
 	 * Get all type names as a string array.
 	 * 
@@ -47,5 +46,20 @@ public enum ToastType {
 		for (int i = 0; i < v.length; i++)
 			n[i] = v[i].name();
 		return n;
+	}
+
+	public String description() {
+		switch (this) {
+		case ERROR:
+			return "Error";
+		case INFO:
+			return "Information";
+		case WARNING:
+			return "Warning";
+		case NONE:
+			return "Notification";
+		}
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,6 +1,12 @@
 # two-slices
 Simple library for desktop notifications from Java on Windows, Mac OS X and Linux.
 
+## All Platforms
+
+All platforms support the GNTP protocol. If you have have Growl for Mac OS X, Linux or Windows installed, running on listening on the default port, it will be used in preference to all platform specific notification systems.
+
+Additionally on all platforms, if no notifier implementation can be found, the last resort fallback will be to display the messages on *System.out*.
+
 ## Windows
 
 ![](src/web/images/windows-awt.png) ![](src/web/images/windows-swt.png)
@@ -16,7 +22,7 @@ Windows support is currently provided in the following order :-
 
 Mac OS X support will be provided in the following order :-
 
- * Growl. If Growl is available, it will be used.
+ * Growl (via AppleScript). If Growl via AppleScript is available, it will be used.
  * If there is no growl, but osascript is an available command, the default Notification Centre will be used
  * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used.    
@@ -92,6 +98,26 @@ toasters can ignore any and all of them.
 ToasterFactory.setSettings(new ToasterSettings().setAppName("My App Name"));
 ```
 
+### The Tray Icon Mode
+
+Some implementations will require and/or show an icon in your system tray. This will be where the notification
+messages are anchored too. You can set a hint as to how to treat this icon via the configuration.
+
+```java
+ToasterSettings settings = new ToasterSettings();
+settings.setAppName("My App Name");
+settings.setSystemTrayIconMode(SystemTrayIconMode.HIDDEN);
+ToasterFactory.setSettings(settings);
+```
+
+The options for system tray icon mode are :-
+ * HIDDEN. The icon will be hidden at all times. This may require the use of a transparent image depending on the platform.
+ * SHOW_TOAST_TYPE_WHEN_ACTIVE. When active, the icon in the system tray will reflect the type of the current message that is being displayed.
+ * SHOW_DEFAULT_WHEN_ACTIVE. When a message is shown, the default tray icon will be show (see `ToasterSettings.setDefaultImage()`).
+ * SHW_DEFAULT_ALWAYS. The default image (see above) will always be visible as soon as the first notification message is sent.
+
+*When you are providing a 'parent' tray item, the icon mode above may be ignored.*
+
 ### SWT
 
 If you have an SWT application that already has an icon on the tray, you can re-use this for your notification
@@ -100,11 +126,23 @@ settings when the SWT notifier is used.
 *For SWT, you must already be running an event loop (see SWT toolkit documentation). At the moment it is not possible to automatically start a loop mainly due to restrictions on OS X where SWT must be on the main thread.*
 
 ```java
-TrayItem myTrayItem = .....  // this is the reference to your tray item
+TrayItem myTrayItem = .....  // this is the reference to your org.eclipse.swt.widgets.TrayItem
 ToasterFactory.setSettings(new ToasterSettings().setParent(myTrayItem));
 ```
 
 Then, whenever the SWT notifier is used, the balloon message will be anchored to your tray item.
+
+### AWT
+
+If you have a Swing/AWT application that already has an icon on the tray, you can re-use this for your notification
+settings when the AWT notifier is used.
+
+```java
+TrayIcon myTrayIcon = .....  // this is the reference to your java.awt.TrayIcon
+ToasterFactory.setSettings(new ToasterSettings().setParent(myTrayIcon));
+```
+
+Then, whenever the AWT notifier is used, the balloon message will be anchored to your tray item.
 
 ## Extending
 

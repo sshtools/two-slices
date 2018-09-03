@@ -16,6 +16,7 @@
 package com.sshtools.twoslices;
 
 import com.sshtools.twoslices.impl.AWTNotifier;
+import com.sshtools.twoslices.impl.GNTPToaster;
 import com.sshtools.twoslices.impl.GrowlToaster;
 import com.sshtools.twoslices.impl.NotifyToaster;
 import com.sshtools.twoslices.impl.OsXToaster;
@@ -40,13 +41,11 @@ import com.sshtools.twoslices.impl.SysOutNotifier;
  *
  */
 public abstract class ToasterFactory {
-
 	/**
-	 * Default {@link ToasterFactory} that will lazily create a {@link Toaster} by
-	 * trying all implementations until a supported one is found.
+	 * Default {@link ToasterFactory} that will lazily create a {@link Toaster}
+	 * by trying all implementations until a supported one is found.
 	 */
 	public static class DefaultToasterFactory extends ToasterFactory {
-
 		private Toaster instance;
 		private Object lock = new Object();
 
@@ -55,21 +54,25 @@ public abstract class ToasterFactory {
 			synchronized (lock) {
 				if (instance == null) {
 					try {
-						instance = new NotifyToaster(settings);
-					} catch (UnsupportedOperationException uoe) {
+						instance = new GNTPToaster(settings);
+					} catch (UnsupportedOperationException uoe0) {
 						try {
-							instance = new GrowlToaster(settings);
-						} catch (UnsupportedOperationException uoe2) {
+							instance = new NotifyToaster(settings);
+						} catch (UnsupportedOperationException uoe1) {
 							try {
-								instance = new OsXToaster(settings);
-							} catch (UnsupportedOperationException uoe3) {
+								instance = new GrowlToaster(settings);
+							} catch (UnsupportedOperationException uoe2) {
 								try {
-									instance = new SWTToaster(settings);
-								} catch (UnsupportedOperationException uoe4) {
+									instance = new OsXToaster(settings);
+								} catch (UnsupportedOperationException uoe3) {
 									try {
-										instance = new AWTNotifier(settings);
-									} catch (UnsupportedOperationException uoe5) {
-										instance = new SysOutNotifier(settings);
+										instance = new SWTToaster(settings);
+									} catch (UnsupportedOperationException uoe4) {
+										try {
+											instance = new AWTNotifier(settings);
+										} catch (UnsupportedOperationException uoe5) {
+											instance = new SysOutNotifier(settings);
+										}
 									}
 								}
 							}
@@ -79,16 +82,15 @@ public abstract class ToasterFactory {
 				return instance;
 			}
 		}
-
 	}
+
 	private static ToasterSettings settings = new ToasterSettings();
 	private static ToasterFactory instance;
-
 	private static Object lock = new Object();
 
 	/**
-	 * Get an instance of the toaster factory which is responsible for creating an
-	 * appropriate {@link Toaster}.
+	 * Get an instance of the toaster factory which is responsible for creating
+	 * an appropriate {@link Toaster}.
 	 * 
 	 * @return toaster factory
 	 */
@@ -103,8 +105,7 @@ public abstract class ToasterFactory {
 	/**
 	 * Set settings hints.
 	 * 
-	 * @param settings
-	 *            settings hints
+	 * @param settings settings hints
 	 */
 	public static void setSettings(ToasterSettings settings) {
 		ToasterFactory.settings = settings;
@@ -113,10 +114,9 @@ public abstract class ToasterFactory {
 	/**
 	 * Get settings hints.
 	 * 
-	 * @return
-	 *            settings hints
+	 * @return settings hints
 	 */
-	public static ToasterSettings  getSettings() {
+	public static ToasterSettings getSettings() {
 		return ToasterFactory.settings;
 	}
 

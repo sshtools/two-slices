@@ -6,6 +6,7 @@ Simple library for desktop notifications from Java on Windows, Mac OS X and Linu
  * No hard dependencies, although can be augmented with SWT to provide further options.
  * Supports NONE, INFO, ERROR and WARNING notifications types, each with it's own icon.
  * Supports custom icons
+ * Can integrate with your existing system tray icon if required (SWT and Swing/AWT)
 
 ## All Platforms
 

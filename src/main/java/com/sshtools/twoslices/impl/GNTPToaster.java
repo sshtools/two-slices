@@ -49,8 +49,7 @@ public class GNTPToaster extends AbstractToaster {
 		try {
 			register();
 		} catch (ToasterException te) {
-			te.printStackTrace();
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException(te);
 		}
 	}
 

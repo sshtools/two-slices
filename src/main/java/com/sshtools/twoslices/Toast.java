@@ -30,7 +30,7 @@ public class Toast {
 	 * @param title title of message
 	 * @param content content of message
 	 * @param listeners optional array of listeners that will be invoked if the
-	 *            toast is clicked. If actions are not supported, the listeners
+	 *            toast is clicked. If listeners are not supported, the listeners
 	 *            will be silently ignored.
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
@@ -46,7 +46,7 @@ public class Toast {
 	 * @param title title of message
 	 * @param content content of message
 	 * @param listeners optional array of listeners that will be invoked if the
-	 *            toast is clicked. If actions are not supported, the listeners
+	 *            toast is clicked. If listeners are not supported, the listeners
 	 *            will be silently ignored.
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */

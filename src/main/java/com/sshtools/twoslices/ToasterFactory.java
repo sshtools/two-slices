@@ -16,6 +16,7 @@
 package com.sshtools.twoslices;
 
 import com.sshtools.twoslices.impl.AWTNotifier;
+import com.sshtools.twoslices.impl.DBUSNotifyToaster;
 import com.sshtools.twoslices.impl.GNTPToaster;
 import com.sshtools.twoslices.impl.GrowlToaster;
 import com.sshtools.twoslices.impl.NotifyToaster;
@@ -57,21 +58,25 @@ public abstract class ToasterFactory {
 						instance = new GNTPToaster(settings);
 					} catch (UnsupportedOperationException uoe0) {
 						try {
-							instance = new NotifyToaster(settings);
+							instance = new DBUSNotifyToaster(settings);
 						} catch (UnsupportedOperationException uoe1) {
 							try {
-								instance = new GrowlToaster(settings);
+								instance = new NotifyToaster(settings);
 							} catch (UnsupportedOperationException uoe2) {
 								try {
-									instance = new OsXToaster(settings);
+									instance = new GrowlToaster(settings);
 								} catch (UnsupportedOperationException uoe3) {
 									try {
-										instance = new SWTToaster(settings);
+										instance = new OsXToaster(settings);
 									} catch (UnsupportedOperationException uoe4) {
 										try {
-											instance = new AWTNotifier(settings);
+											instance = new SWTToaster(settings);
 										} catch (UnsupportedOperationException uoe5) {
-											instance = new SysOutNotifier(settings);
+											try {
+												instance = new AWTNotifier(settings);
+											} catch (UnsupportedOperationException uoe6) {
+												instance = new SysOutNotifier(settings);
+											}
 										}
 									}
 								}

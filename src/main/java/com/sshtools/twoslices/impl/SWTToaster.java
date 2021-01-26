@@ -77,7 +77,7 @@ public class SWTToaster extends AbstractToaster {
 				throw new UnsupportedOperationException();
 			started = System.currentTimeMillis();
 			init();
-		} catch (ClassNotFoundException cnfe) {
+		} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
 			throw new UnsupportedOperationException();
 		}
 	}

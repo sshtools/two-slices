@@ -71,7 +71,7 @@ public abstract class ToasterFactory {
 									} catch (UnsupportedOperationException uoe4) {
 										try {
 											instance = new SWTToaster(settings);
-										} catch (UnsupportedOperationException uoe5) {
+										} catch (NoClassDefFoundError | UnsupportedOperationException uoe5) {
 											try {
 												instance = new AWTNotifier(settings);
 											} catch (UnsupportedOperationException uoe6) {

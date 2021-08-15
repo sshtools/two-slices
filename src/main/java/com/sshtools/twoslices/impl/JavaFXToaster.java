@@ -28,6 +28,7 @@ import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
 
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.text.Text;
@@ -71,6 +72,7 @@ public class JavaFXToaster extends AbstractToaster {
 				as.add(action);
 			}
 			n.action(as.toArray(new Action[0]));
+			n.position(calcPos());
 			n.onAction((e) -> {
 			});
 			if (configuration.getParent() == null) {
@@ -91,6 +93,38 @@ public class JavaFXToaster extends AbstractToaster {
 				showNotification(type, n);
 			}
 		});
+	}
+
+	private Pos calcPos() {
+		if(configuration.getPosition() == null) {
+			if(System.getProperty("os.name", "").indexOf("mac") > -1) {
+				return Pos.TOP_RIGHT;
+			}
+			else
+				return Pos.BOTTOM_RIGHT;
+		}
+		else {
+			switch(configuration.getPosition()) {
+			case TL:
+				return Pos.TOP_LEFT;
+			case T:
+				return Pos.TOP_CENTER;
+			case TR:
+				return Pos.TOP_RIGHT;
+			case CL:
+				return Pos.CENTER_LEFT;
+			case C:
+				return Pos.CENTER;
+			case CR:
+				return Pos.CENTER_RIGHT;
+			case BL:
+				return Pos.BOTTOM_LEFT;
+			case B:
+				return Pos.BOTTOM_CENTER;
+			default:
+				return Pos.BOTTOM_RIGHT;
+			}
+		}
 	}
 
 	protected void showNotification(ToastType type, Notifications n) {

@@ -34,11 +34,16 @@ public class ToasterSettings {
 		HIDDEN, SHOW_TOAST_TYPE_WHEN_ACTIVE, SHOW_DEFAULT_WHEN_ACTIVE, SHOW_DEFAULT_ALWAYS
 	}
 	
+	public enum Position {
+		TL, T, TR, CL, C, CR, BL, B, BR
+	}
+	
 	private String appName = "TwoSlices";
 	private Object parent;
 	private int timeout = 10;
 	private URL defaultImage;
-	private SystemTrayIconMode systemTrayIconMode = SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE; 
+	private SystemTrayIconMode systemTrayIconMode = SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE;
+	private Position position;
 
 	public ToasterSettings() {
 		try {
@@ -175,6 +180,26 @@ public class ToasterSettings {
 	 */
 	public void setSystemTrayIconMode(SystemTrayIconMode systemTrayIconMode) {
 		this.systemTrayIconMode = systemTrayIconMode;
+	}
+
+	/**
+	 * Get the position hint (if supported). Will be automatically determined
+	 * when <code>null</code> (the default).
+	 * 
+	 * @return position hint
+	 */
+	public Position getPosition() {
+		return position;
+	}
+
+	/**
+	 * Set the position hint (if supported). Will be automatically determined
+	 * when <code>null</code> (the default).
+	 * 
+	 * @param position position hint
+	 */
+	public void setPosition(Position position) {
+		this.position = position;
 	}
 	
 	

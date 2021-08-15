@@ -86,7 +86,8 @@ public class JavaFXToaster extends AbstractToaster {
 					hidden.setScene(scene);
 					hidden.sizeToScene();
 				}
-				hidden.show();
+				if(hidden != null)
+					hidden.show();
 				Platform.runLater(() -> showNotification(type, n));
 			} else {
 				n.owner(configuration.getParent());

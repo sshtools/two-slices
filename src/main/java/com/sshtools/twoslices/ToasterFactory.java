@@ -21,7 +21,6 @@ import com.sshtools.twoslices.impl.GNTPToaster;
 import com.sshtools.twoslices.impl.GrowlToaster;
 import com.sshtools.twoslices.impl.JavaFXToaster;
 import com.sshtools.twoslices.impl.NotifyToaster;
-import com.sshtools.twoslices.impl.NotiificationCenterToaster;
 import com.sshtools.twoslices.impl.OsXToaster;
 import com.sshtools.twoslices.impl.SWTToaster;
 import com.sshtools.twoslices.impl.SysOutNotifier;
@@ -45,8 +44,8 @@ import com.sshtools.twoslices.impl.SysOutNotifier;
  */
 public abstract class ToasterFactory {
 	/**
-	 * Default {@link ToasterFactory} that will lazily create a {@link Toaster}
-	 * by trying all implementations until a supported one is found.
+	 * Default {@link ToasterFactory} that will lazily create a {@link Toaster} by
+	 * trying all implementations until a supported one is found.
 	 */
 	public static class DefaultToasterFactory extends ToasterFactory {
 		private Toaster instance;
@@ -69,24 +68,18 @@ public abstract class ToasterFactory {
 									instance = new GrowlToaster(settings);
 								} catch (UnsupportedOperationException uoe3) {
 									try {
-										instance = new NotiificationCenterToaster(settings);
-									}
-									catch(UnsupportedOperationException uoe4) {
+										instance = new OsXToaster(settings);
+									} catch (UnsupportedOperationException uoe5) {
 										try {
-											instance = new OsXToaster(settings);
-										} catch (UnsupportedOperationException uoe5) {
+											instance = new JavaFXToaster(settings);
+										} catch (NoClassDefFoundError | UnsupportedOperationException uoe6) {
 											try {
-												instance = new JavaFXToaster(settings);
-											}
-											catch(NoClassDefFoundError | UnsupportedOperationException uoe6) {
+												instance = new SWTToaster(settings);
+											} catch (NoClassDefFoundError | UnsupportedOperationException uoe7) {
 												try {
-													instance = new SWTToaster(settings);
-												} catch (NoClassDefFoundError | UnsupportedOperationException uoe7) {
-													try {
-														instance = new AWTNotifier(settings);
-													} catch (Exception uoe8) {
-														instance = new SysOutNotifier(settings);
-													}
+													instance = new AWTNotifier(settings);
+												} catch (Exception uoe8) {
+													instance = new SysOutNotifier(settings);
 												}
 											}
 										}
@@ -106,8 +99,8 @@ public abstract class ToasterFactory {
 	private static Object lock = new Object();
 
 	/**
-	 * Get an instance of the toaster factory which is responsible for creating
-	 * an appropriate {@link Toaster}.
+	 * Get an instance of the toaster factory which is responsible for creating an
+	 * appropriate {@link Toaster}.
 	 * 
 	 * @return toaster factory
 	 */
@@ -120,8 +113,8 @@ public abstract class ToasterFactory {
 	}
 
 	/**
-	 * Set an instance of the toaster factory which is responsible for creating
-	 * an appropriate {@link Toaster}.
+	 * Set an instance of the toaster factory which is responsible for creating an
+	 * appropriate {@link Toaster}.
 	 * 
 	 * @param factory toaster factory
 	 */

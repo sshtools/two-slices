@@ -18,6 +18,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<javafx.version>16</javafx.version>
 	</properties>
 
 	<inceptionYear>2018</inceptionYear>
@@ -64,18 +65,30 @@
 			<version>3.3.0</version>
 			<optional>true</optional>
 		</dependency>
-		<!-- <dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.swt</artifactId>
-			<version>3.115.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId>
-					
-				</exclusion>
-			</exclusions>
-		</dependency> -->
+		<dependency>
+			<groupId>org.controlsfx</groupId>
+			<artifactId>controlsfx</artifactId>
+			<version>11.1.0</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>${javafx.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.testfx</groupId>
+			<artifactId>testfx-junit</artifactId>
+			<version>4.0.15-alpha</version>
+			<scope>test</scope>
+		</dependency>
+
+
+		<!-- <dependency> <groupId>org.eclipse.platform</groupId> <artifactId>org.eclipse.swt</artifactId> 
+			<version>3.115.0</version> <exclusions> <exclusion> <groupId>org.eclipse.platform</groupId> 
+			<artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId> </exclusion> </exclusions> 
+			</dependency> -->
 
 	</dependencies>
 	<description>Simple library to display desktop notifications appropriate for the platform. Currently supports :-

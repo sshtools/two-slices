@@ -66,11 +66,14 @@ public class AWTNotifier extends AbstractToaster {
 				if (trayIcon == null) {
 					if (configuration.getParent() != null) {
 						trayIcon = (TrayIcon) configuration.getParent();
-					} else if (icon == null || icon.length() == 0)
+					} else if (icon == null || icon.length() == 0) {
 						trayIcon = new TrayIcon(getPlatformImage(getTypeImage(type)), title);
-					else
+						tray.add(trayIcon);
+					}
+					else {
 						trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(icon))), title);
-					tray.add(trayIcon);
+						tray.add(trayIcon);
+					}
 				} else {
 					if (icon == null || icon.length() == 0) {
 						trayIcon.setImage(getPlatformImage(getTypeImage(type)));

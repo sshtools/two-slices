@@ -281,7 +281,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
-					<version>3.115.0</version>
+					<version>3.116.100</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -298,7 +298,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.win32.win32.x86</artifactId>
-					<version>3.115.0</version>
+					<version>3.116.100</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -315,7 +315,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-					<version>3.115.0</version>
+					<version>3.116.100</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -332,7 +332,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-					<version>3.115.0</version>
+					<version>3.116.100</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.eclipse.platform</groupId>

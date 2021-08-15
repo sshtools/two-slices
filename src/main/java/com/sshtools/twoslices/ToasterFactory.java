@@ -28,13 +28,13 @@ import com.sshtools.twoslices.impl.SysOutNotifier;
  * Responsible for creating a {@link Toaster} instance based on the current
  * operating environment.
  * <p>
- * The {@link Toaster} implementation is accessed through {@link #factory()},
+ * The {@link Toaster} implementation is accessed through {@link #getFactory()},
  * which will lazily create an instance using the default algorithm, which tries
  * each one until a supported implementation is found. The default order is such
  * that the 'best' is chosen, which in general is the most native looking.
  * <p>
  * You can install you own factory by extending this class and instantiating
- * your custom class before any call to the {@link #factory()} method, either
+ * your custom class before any call to the {@link #getFactory()} method, either
  * directly or using the convenience {@link Toast} class.
  * <p>
  * Configuration hints can be provided to the toaster implementation via
@@ -99,11 +99,23 @@ public abstract class ToasterFactory {
 	 * 
 	 * @return toaster factory
 	 */
-	public static ToasterFactory factory() {
+	public static ToasterFactory getFactory() {
 		synchronized (lock) {
 			if (instance == null)
 				new DefaultToasterFactory();
 			return instance;
+		}
+	}
+
+	/**
+	 * Set an instance of the toaster factory which is responsible for creating
+	 * an appropriate {@link Toaster}.
+	 * 
+	 * @param factory toaster factory
+	 */
+	public static void setFactory(ToasterFactory factory) {
+		synchronized (lock) {
+			instance = factory;
 		}
 	}
 

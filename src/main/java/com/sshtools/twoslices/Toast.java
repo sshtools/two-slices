@@ -35,7 +35,7 @@ public class Toast {
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
 	public static void toast(ToastType type, String title, String content, ToastActionListener... listeners) {
-		ToasterFactory.factory().toaster().toast(type, title, content, listeners);
+		ToasterFactory.getFactory().toaster().toast(type, title, content, listeners);
 	}
 
 	/**
@@ -51,6 +51,6 @@ public class Toast {
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
 	public static void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
-		ToasterFactory.factory().toaster().toast(type, icon, title, content, listeners);
+		ToasterFactory.getFactory().toaster().toast(type, icon, title, content, listeners);
 	}
 }

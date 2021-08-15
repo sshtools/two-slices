@@ -4,7 +4,6 @@ module com.sshtools.twoslices {
 	requires static org.freedesktop.dbus;
 	requires static org.eclipse.swt.gtk.linux.x86_64;
 	requires static org.controlsfx.control;
-	requires static org.controlsfx.tools;
 	requires static javafx.controls;
 	requires static javafx.graphics;
 	exports com.sshtools.twoslices;

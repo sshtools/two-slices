@@ -98,7 +98,7 @@ public class JavaFXToaster extends AbstractToaster {
 
 	private Pos calcPos() {
 		if(configuration.getPosition() == null) {
-			if(System.getProperty("os.name", "").indexOf("mac") > -1) {
+			if(System.getProperty("os.name", "").indexOf("Mac OS X") > -1) {
 				return Pos.TOP_RIGHT;
 			}
 			else

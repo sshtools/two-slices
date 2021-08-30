@@ -20,6 +20,7 @@ import com.sshtools.twoslices.impl.DBUSNotifyToaster;
 import com.sshtools.twoslices.impl.GNTPToaster;
 import com.sshtools.twoslices.impl.GrowlToaster;
 import com.sshtools.twoslices.impl.JavaFXToaster;
+import com.sshtools.twoslices.impl.NotificationCenterToaster;
 import com.sshtools.twoslices.impl.NotifyToaster;
 import com.sshtools.twoslices.impl.OsXToaster;
 import com.sshtools.twoslices.impl.SWTToaster;
@@ -68,22 +69,30 @@ public abstract class ToasterFactory {
 									instance = new GrowlToaster(settings);
 								} catch (UnsupportedOperationException uoe3) {
 									try {
-										instance = new OsXToaster(settings);
-									} catch (UnsupportedOperationException uoe5) {
+										instance = new NotificationCenterToaster(settings);
+									}
+									catch (UnsupportedOperationException uoe3b) {
 										try {
-											instance = new JavaFXToaster(settings);
-										} catch (NoClassDefFoundError | UnsupportedOperationException uoe6) {
+											instance = new OsXToaster(settings);
+										} catch (UnsupportedOperationException uoe5) {
 											try {
 												instance = new SWTToaster(settings);
-											} catch (NoClassDefFoundError | UnsupportedOperationException uoe7) {
+											} catch (NoClassDefFoundError | UnsupportedOperationException uoe6) {
 												try {
-													instance = new AWTNotifier(settings);
-												} catch (Exception uoe8) {
-													instance = new SysOutNotifier(settings);
+													instance = new JavaFXToaster(settings);
+												} catch (NoClassDefFoundError | UnsupportedOperationException uoe7) {
+													try {
+														instance = new AWTNotifier(settings);
+													} catch (Exception uoe8) {
+														instance = new SysOutNotifier(settings);
+													}
 												}
 											}
 										}
 									}
+									
+									
+									
 								}
 							}
 						}

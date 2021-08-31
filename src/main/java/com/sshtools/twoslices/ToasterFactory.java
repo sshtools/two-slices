@@ -71,10 +71,10 @@ public abstract class ToasterFactory {
 									try {
 										instance = new NotificationCenterToaster(settings);
 									}
-									catch (UnsupportedOperationException uoe3b) {
+									catch (NoClassDefFoundError | UnsupportedOperationException uoe3b) {
 										try {
 											instance = new OsXToaster(settings);
-										} catch (UnsupportedOperationException uoe5) {
+										} catch (NoClassDefFoundError | UnsupportedOperationException uoe5) {
 											try {
 												instance = new SWTToaster(settings);
 											} catch (NoClassDefFoundError | UnsupportedOperationException uoe6) {

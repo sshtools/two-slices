@@ -62,7 +62,6 @@ public class DBUSNotifyToaster extends AbstractToaster {
 				super(path);
 				this.id = id;
 				this.action = action;
-				System.out.println("ActionInvoked " + id + " " + action);
 			}
 
 		}
@@ -76,7 +75,6 @@ public class DBUSNotifyToaster extends AbstractToaster {
 				super(path);
 				this.id = id;
 				this.reason = reason;
-				System.out.println("NotificationClosed " + id);
 			}
 
 		}

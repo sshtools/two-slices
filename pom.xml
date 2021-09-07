@@ -89,7 +89,12 @@
 			<version>5.8.0</version>
 			<optional>true</optional>
 		</dependency>
-
+		<dependency>
+			<groupId>de.jangassen</groupId>
+			<artifactId>jfa</artifactId>
+			<version>1.2.0</version>
+            <optional>true</optional>
+		</dependency>
 
 		<!-- <dependency> <groupId>org.eclipse.platform</groupId> <artifactId>org.eclipse.swt</artifactId> 
 			<version>3.115.0</version> <exclusions> <exclusion> <groupId>org.eclipse.platform</groupId> 
@@ -269,13 +274,13 @@ All other platforms (AWT)</description>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-javadoc-plugin</artifactId>
 							<configuration>
-							     <!-- TODO temp disabled -->
-							     <skip>true</skip>
-							     
+								<!-- TODO temp disabled -->
+								<skip>true</skip>
+
 								<!-- TODO: Why is this STILL broken! -->
 								<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
 								<sourceFileExcludes>
-								    <sourceFileExclude>com/sshtools/twoslices/impl/NotificationCenterToaster.java</sourceFileExclude>
+									<sourceFileExclude>com/sshtools/twoslices/impl/NotificationCenterToaster.java</sourceFileExclude>
 								</sourceFileExcludes>
 								<!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
 								<detectJavaApiLink>false</detectJavaApiLink>

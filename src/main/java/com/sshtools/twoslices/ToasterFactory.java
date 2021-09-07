@@ -20,6 +20,7 @@ import com.sshtools.twoslices.impl.DBUSNotifyToaster;
 import com.sshtools.twoslices.impl.GNTPToaster;
 import com.sshtools.twoslices.impl.GrowlToaster;
 import com.sshtools.twoslices.impl.JavaFXToaster;
+import com.sshtools.twoslices.impl.NotificationCenterToaster;
 import com.sshtools.twoslices.impl.NotifyToaster;
 import com.sshtools.twoslices.impl.OsXToaster;
 import com.sshtools.twoslices.impl.SWTToaster;
@@ -67,10 +68,10 @@ public abstract class ToasterFactory {
 								try {
 									instance = new GrowlToaster(settings);
 								} catch (UnsupportedOperationException uoe3) {
-//									try {
-//										instance = new NotificationCenterToaster(settings);
-//									}
-//									catch (NoClassDefFoundError | UnsupportedOperationException uoe3b) {
+									try {
+										instance = new NotificationCenterToaster(settings);
+									}
+									catch (NoClassDefFoundError | UnsupportedOperationException uoe3b) {
 										try {
 											instance = new OsXToaster(settings);
 										} catch (NoClassDefFoundError | UnsupportedOperationException uoe5) {
@@ -88,9 +89,7 @@ public abstract class ToasterFactory {
 												}
 											}
 										}
-//									}
-									
-									
+									}
 									
 								}
 							}

@@ -89,12 +89,6 @@
 			<version>5.8.0</version>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
-			<groupId>de.jangassen</groupId>
-			<artifactId>jfa</artifactId>
-			<version>1.2.0</version>
-            <optional>true</optional>
-		</dependency>
 
 		<!-- <dependency> <groupId>org.eclipse.platform</groupId> <artifactId>org.eclipse.swt</artifactId> 
 			<version>3.115.0</version> <exclusions> <exclusion> <groupId>org.eclipse.platform</groupId> 

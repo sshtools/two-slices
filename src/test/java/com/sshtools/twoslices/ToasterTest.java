@@ -17,47 +17,9 @@ package com.sshtools.twoslices;
 
 import org.junit.Test;
 
-public class ToasterTest {
+public class ToasterTest extends AbstractToasterTest {
 	@Test
 	public void testToast() throws InterruptedException {
-//		Thread.sleep(5000);
-//		Toast.toast(ToastType.ERROR, "Error",
-//				"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum");
-//		Thread.sleep(15000);
-//		Toast.toast(ToastType.INFO, "Test Info", "Some information");
-//		Thread.sleep(5000);
-//		Toast.toast(ToastType.WARNING, "Test Warning", "Some warning");
-//		Thread.sleep(15000);
-//		Toast.toast(ToastType.ERROR, "Another Error", "Another error after a longer wait");
-//		Thread.sleep(15000);
-		Toast.toast(ToastType.INFO, "Info", "Choose an action", new ToastActionListener() {
-			@Override
-			public void action() {
-			}
-
-			@Override
-			public String getName() {
-				return "An Action";
-			}
-		}, new ToastActionListener() {
-			@Override
-			public void action() {
-			}
-
-			@Override
-			public String getName() {
-				return "Anoither Action";
-			}
-		}, new ToastActionListener() {
-			@Override
-			public void action() {
-			}
-
-			@Override
-			public String getName() {
-				return "Third Action";
-			}
-		});
-		Thread.sleep(15000);
+		testToaster(ToasterFactory.getFactory().toaster());
 	}
 }

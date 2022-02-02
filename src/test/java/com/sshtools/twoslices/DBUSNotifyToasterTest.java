@@ -17,11 +17,11 @@ package com.sshtools.twoslices;
 
 import org.junit.Test;
 
-import com.sshtools.twoslices.impl.JavaFXToaster;
+import com.sshtools.twoslices.impl.DBUSNotifyToaster;
 
-public class JavaFXToasterTest extends AbstractToasterTest {
+public class DBUSNotifyToasterTest extends AbstractToasterTest {
 	@Test
-	public void testJavaFX() throws InterruptedException {
-		testToaster(new JavaFXToaster(new ToasterSettings()));
+	public void testAWT() throws InterruptedException {
+		testToaster(new DBUSNotifyToaster(new ToasterSettings()));
 	}
 }

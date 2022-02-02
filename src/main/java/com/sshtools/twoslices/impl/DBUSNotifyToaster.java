@@ -31,7 +31,8 @@ import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
+import com.sshtools.twoslices.ToastBuilder;
+import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.impl.DBUSNotifyToaster.Notifications.ActionInvoked;
@@ -51,7 +52,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		String[] GetServerInformation();
 
 		UInt32 Notify(String appName, UInt32 replacesId, String appIcon, String summary, String body,
-				List<String> actions, Map<String, Variant<String>> hints, int expireTimeout);
+				List<String> actions, Map<String, Variant<?>> hints, int expireTimeout);
 
 		public class ActionInvoked extends DBusSignal {
 
@@ -86,7 +87,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 	private Map<UInt32, ActiveNotification> actives = new HashMap<>();
 
 	class ActiveNotification {
-		ToastActionListener[] listeners;
+		List<ToastAction> actions;
 		UInt32 id;
 	}
 
@@ -99,6 +100,10 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		super(configuration);
 		try {
 			conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
+			
+			/* https://github.com/hypfvieh/dbus-java/issues/159 */
+			conn.changeThreadCount((byte)1);
+			
 			notifications = conn.getRemoteObject("org.freedesktop.Notifications", "/org/freedesktop/Notifications",
 					Notifications.class);
 			conn.addSigHandler(Notifications.ActionInvoked.class, notifications,
@@ -113,9 +118,9 @@ public class DBUSNotifyToaster extends AbstractToaster {
 								}
 							}
 							if (active != null) {
-								for (ToastActionListener l : active.listeners) {
-									if (l.toString().equals(s.action)) {
-										l.action();
+								for (ToastAction l : active.actions) {
+									if (l.name().equals(s.action) && l.listener() != null) {
+										l.listener().action();
 									}
 								}
 							}
@@ -149,11 +154,13 @@ public class DBUSNotifyToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content,
-			ToastActionListener... actionListeners) {
+	public void toast(ToastBuilder builder) {
 		List<String> args = new ArrayList<String>();
 
 		args.add("notify-send");
+		String icon = builder.icon();
+		ToastType type = builder.type();
+
 		if (icon == null || icon.length() == 0) {
 			switch (type) {
 			case NONE:
@@ -170,20 +177,25 @@ public class DBUSNotifyToaster extends AbstractToaster {
 			}
 		}
 		List<String> actions = new ArrayList<>();
-		if (actionListeners.length > 0) {
+		List<ToastAction> toastActions = builder.actions();
+		if (toastActions.size() > 0) {
 			actions.add("default");
-			actions.add(actionListeners[0].getName());
+			actions.add(toastActions.get(0).displayName());
 		}
-		if (actionListeners.length > 1) {
-			for (int i = 1; i < actionListeners.length; i++) {
-				actions.add(actionListeners[i].getName());
-				actions.add(actionListeners[i].getName());
+		if (toastActions.size() > 1) {
+			for (int i = 1; i < toastActions.size(); i++) {
+				actions.add(toastActions.get(i).name());
+				actions.add(toastActions.get(i).displayName());
 			}
 		}
 		ActiveNotification active = new ActiveNotification();
-		active.id = notifications.Notify(configuration.getAppName(), new UInt32(0), icon, title, content, actions,
-				new HashMap<>(), configuration.getTimeout() * 1000);
-		active.listeners = actionListeners;
+		Map<String, Variant<?>> hints = new HashMap<>();
+		if(builder.timeout() == 0) {
+			hints.put("urgency", new Variant<Byte>(Byte.valueOf((byte)2)));
+		}
+		active.id = notifications.Notify(configuration.getAppName(), new UInt32(0), icon == null ? "" : icon, builder.title() == null ? "" : builder.title(), builder.content() == null ? "" : builder.content(), actions,
+				hints, ( builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout() ) * 1000);
+		active.actions = toastActions;
 		this.actives.put(active.id, active);
 	}
 

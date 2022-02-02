@@ -26,11 +26,11 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
+import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.ToasterException;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
-import com.sshtools.twoslices.ToasterException;
 
 /**
  * Fall-back notifier for when a native notification system cannot be located or
@@ -59,31 +59,31 @@ public class AWTNotifier extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public void toast(ToastBuilder builder) {
 		final SystemTray tray = SystemTray.getSystemTray();
 		EventQueue.invokeLater(() -> {
 			try {
 				if (trayIcon == null) {
 					if (configuration.getParent() != null) {
 						trayIcon = (TrayIcon) configuration.getParent();
-					} else if (icon == null || icon.length() == 0) {
-						trayIcon = new TrayIcon(getPlatformImage(getTypeImage(type)), title);
+					} else if (builder.icon()== null || builder.icon().length() == 0) {
+						trayIcon = new TrayIcon(getPlatformImage(getTypeImage(builder.type())), builder.title());
 						tray.add(trayIcon);
 					}
 					else {
-						trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(icon))), title);
+						trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(builder.icon()))), builder.title());
 						tray.add(trayIcon);
 					}
 				} else {
-					if (icon == null || icon.length() == 0) {
-						trayIcon.setImage(getPlatformImage(getTypeImage(type)));
+					if (builder.icon() == null || builder.icon().length() == 0) {
+						trayIcon.setImage(getPlatformImage(getTypeImage(builder.type())));
 					} else
-						trayIcon.setImage(getPlatformImage(ImageIO.read(new File(icon))));
-					trayIcon.setToolTip(title);
+						trayIcon.setImage(getPlatformImage(ImageIO.read(new File(builder.icon()))));
+					trayIcon.setToolTip(builder.title());
 					if(timer != null)
 						timer.interrupt();
 				}
-				trayIcon.displayMessage(title, content, TrayIcon.MessageType.valueOf(type.name()));
+				trayIcon.displayMessage(builder.title(), builder.content(), TrayIcon.MessageType.valueOf(builder.type().name()));
 				timer = new Thread("AWTNotifierWait") {
 					@Override
 					public void run() {
@@ -103,9 +103,9 @@ public class AWTNotifier extends AbstractToaster {
 				};
 				timer.start();
 			} catch (IOException ioe) {
-				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), ioe);
+				throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), ioe);
 			} catch (AWTException e) {
-				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), e);
+				throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), e);
 			}
 		});
 	}

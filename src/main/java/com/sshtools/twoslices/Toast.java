@@ -23,6 +23,15 @@ package com.sshtools.twoslices;
  * @see ToasterFactory
  */
 public class Toast {
+
+	/**
+	 * Create a new {@link ToastBuilder}.
+	 * @throws ToasterException if there is a serious unrecoverable error.
+	 */
+	public static ToastBuilder builder() {
+		return new ToastBuilder().toaster(ToasterFactory.getFactory().toaster());
+	}
+	
 	/**
 	 * Display a notification message.
 	 * 
@@ -35,7 +44,11 @@ public class Toast {
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
 	public static void toast(ToastType type, String title, String content, ToastActionListener... listeners) {
-		ToasterFactory.getFactory().toaster().toast(type, title, content, listeners);
+		ToastBuilder builder = builder().type(type).title(title).content(content);
+		for(ToastActionListener l : listeners) {
+			builder.action(l.toString(), () -> l.action());
+		}
+		builder.toast();
 	}
 
 	/**
@@ -51,6 +64,10 @@ public class Toast {
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
 	public static void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
-		ToasterFactory.getFactory().toaster().toast(type, icon, title, content, listeners);
+		ToastBuilder builder = builder().type(type).title(title).icon(icon).content(content);
+		for(ToastActionListener l : listeners) {
+			builder.action(l.toString(), () -> l.action());
+		}
+		builder.toast();
 	}
 }

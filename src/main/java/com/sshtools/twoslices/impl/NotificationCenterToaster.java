@@ -16,8 +16,7 @@
 package com.sshtools.twoslices.impl;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
-import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sun.jna.Platform;
 
@@ -73,12 +72,12 @@ public class NotificationCenterToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public void toast(ToastBuilder builder) {
 		final ID notification = Foundation.invoke(Foundation.getObjcClass("NSUserNotification"), "new");
 		Foundation.invoke(notification, "setTitle:",
-				Foundation.nsString(StringUtil.stripHtml(title, true).replace("%", "%%")));
+				Foundation.nsString(StringUtil.stripHtml(builder.title(), true).replace("%", "%%")));
 		Foundation.invoke(notification, "setInformativeText:",
-				Foundation.nsString(StringUtil.stripHtml(content, true).replace("%", "%%")));
+				Foundation.nsString(StringUtil.stripHtml(builder.content(), true).replace("%", "%%")));
 		final ID center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
 				"defaultUserNotificationCenter");
 		Foundation.invoke(center, "deliverNotification:", notification);

@@ -23,7 +23,8 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.tools.Utils;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
+import com.sshtools.twoslices.ToastBuilder;
+import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
 
@@ -58,18 +59,19 @@ public class JavaFXToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public void toast(ToastBuilder builder) {
 		maybeRunLater(() -> {
 			Notifications n = Notifications.create();
-			n.title(title);
-			n.text(content);
+			n.title(builder.title());
+			n.text(builder.content());
 			n.threshold(3, Notifications.create().title("Collapsed Notification"));
 			List<Action> as = new ArrayList<>();
-			for (ToastActionListener a : listeners) {
-				Action action = new Action(a.getName(), (e) -> {
-					a.action();
+			for(ToastAction a : builder.actions()) {
+				Action action = new Action(a.displayName(), (e) -> {
+					if(a.listener() != null)
+						a.listener().action();
 				});
-				as.add(action);
+				as.add(action);	
 			}
 			n.action(as.toArray(new Action[0]));
 			n.position(calcPos());
@@ -88,10 +90,10 @@ public class JavaFXToaster extends AbstractToaster {
 				}
 				if(hidden != null)
 					hidden.show();
-				Platform.runLater(() -> showNotification(type, n));
+				Platform.runLater(() -> showNotification(builder.type(), n));
 			} else {
 				n.owner(configuration.getParent());
-				showNotification(type, n);
+				showNotification(builder.type(), n);
 			}
 		});
 	}

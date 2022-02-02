@@ -27,7 +27,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
+import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterException;
@@ -79,22 +79,23 @@ public class GrowlToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public void toast(ToastBuilder builder) {
 		StringBuilder script = new StringBuilder();
 		script.append("tell application id \"");
 		script.append(GROWL);
 		script.append("\"\n");
 		script.append("notify with name \"");
-		script.append(type.name());
+		script.append(builder.type().name());
 		script.append("\" title \"");
-		script.append(escape(title));
+		script.append(escape(builder.title()));
 		script.append("\" description \"");
-		script.append(escape(content));
+		script.append(escape(builder.content()));
 		script.append("\" application name \"");
 		script.append(escape(configuration.getAppName()));
+		String icon = builder.icon();
 		if(icon == null || icon.length() == 0) {
 			script.append("\" image from location \"file://");
-			script.append(getFileForType(type).getAbsolutePath().toString());
+			script.append(getFileForType(builder.type()).getAbsolutePath().toString());
 		}
 		else {
 			script.append("\" image from location \"file://");
@@ -104,7 +105,7 @@ public class GrowlToaster extends AbstractToaster {
 		try {
 			engine.eval(script.toString(), engine.getContext());
 		} catch (ScriptException e) {
-			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), e);
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), e);
 		}
 	}
 	

@@ -1,0 +1,89 @@
+[
+{
+  "name":"com.sshtools.twoslices.AbstractToasterTest",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"com.sshtools.twoslices.ToasterTest",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allPublicConstructors":true
+},
+{
+  "name":"com.sun.glass.ui.gtk.GtkPlatformFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.javafx.tk.quantum.QuantumToolkit",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.prism.es2.ES2Pipeline",
+  "methods":[{"name":"getInstance","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.prism.es2.X11GLFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Object",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"java.security.MessageDigestSpi"
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"javafx.scene.image.Image"
+},
+{
+  "name":"javafx.scene.robot.Robot"
+},
+{
+  "name":"javafx.stage.Stage"
+},
+{
+  "name":"javafx.stage.Window"
+},
+{
+  "name":"org.eclipse.jdt.internal.junit4.runner.JUnit4TestLoader",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.eclipse.swt.internal.gtk.OS"
+},
+{
+  "name":"org.testfx.api.FxRobot",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.testfx.framework.junit.ApplicationTest",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.testfx.toolkit.PrimaryStageApplication",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.MD5",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.SHA2$SHA256",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]

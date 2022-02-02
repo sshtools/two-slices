@@ -9,11 +9,4 @@ public interface ToastActionListener {
 	 * Called when action is invoked.
 	 */
 	void action();
-
-	/**
-	 * Return the text for the action (i.e. the ubtton text)
-	 */
-	default String getName() {
-		return toString();
-	}
 }

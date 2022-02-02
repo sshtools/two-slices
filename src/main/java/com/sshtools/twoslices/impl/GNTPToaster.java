@@ -27,7 +27,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
+import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterException;
 import com.sshtools.twoslices.ToasterSettings;
@@ -54,14 +54,15 @@ public class GNTPToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public void toast(ToastBuilder builder) {
 		try (Socket socket = new Socket(InetAddress.getLocalHost(), DEFAULT_PORT)) {
 			OutputStream out = socket.getOutputStream();
 			out.write(String.format("GNTP/1.0 %s %s\r\n", "NOTIFY", "NONE").getBytes("UTF-8"));
 			out.write(String.format("Application-Name: %s\r\n", configuration.getAppName()).getBytes("UTF-8"));
-			out.write(String.format("Notification-Name: %s\r\n", type.name()).getBytes("UTF-8"));
-			out.write(String.format("Notification-Title: %s\r\n", title).getBytes("UTF-8"));
-			out.write(String.format("Notification-Text: %s\r\n", content).getBytes("UTF-8"));
+			out.write(String.format("Notification-Name: %s\r\n", builder.type().name()).getBytes("UTF-8"));
+			out.write(String.format("Notification-Title: %s\r\n", builder.title()).getBytes("UTF-8"));
+			out.write(String.format("Notification-Text: %s\r\n", builder.content()).getBytes("UTF-8"));
+			String icon = builder.icon();
 			if (icon != null && icon.length() > 0) {
 				out.write(String.format("Notification-Icon: file://%s\r\n", new File(icon).toURI().getRawPath()).getBytes("UTF-8"));
 			}

@@ -18,11 +18,10 @@ package com.sshtools.twoslices.impl;
 import java.io.IOException;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
-import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.Toaster;
-import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterSettings;
 
 /**
  * Implementation of a {@link Toaster} when running on Mac OS X with Growl
@@ -46,13 +45,13 @@ public class OsXToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
-		String t = textIcon(type);
+	public void toast(ToastBuilder builder) {
+		String t = textIcon(builder.type());
 		StringBuilder script = new StringBuilder();
 		script.append("display notification \"");
-		script.append(escape(content));
+		script.append(escape(builder.content()));
 		script.append("\" with title \"");
-		script.append(escape(t.length() == 0 ? title : (t + " " + title)));
+		script.append(escape(t.length() == 0 ? builder.title() : (t + " " + builder.title())));
 		script.append("\"");
 		ProcessBuilder b = new ProcessBuilder("osascript", "-e", script.toString());
 		try {
@@ -63,7 +62,7 @@ public class OsXToaster extends AbstractToaster {
 			if (p.waitFor() != 0)
 				throw new IOException("Failed to find osascript.");
 		} catch (IOException | InterruptedException ioe) {
-			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), ioe);
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), ioe);
 		}
 	}
 

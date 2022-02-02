@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.TrayItem;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
+import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
@@ -83,7 +83,7 @@ public class SWTToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public void toast(ToastBuilder builder) {
 		synchronized (lock) {
 			Display display = Display.getDefault();
 			if (!ready) {
@@ -91,14 +91,14 @@ public class SWTToaster extends AbstractToaster {
 				if (now < started + STARTUP_WAIT) {
 					display.asyncExec(() -> display.timerExec((int) ((started + STARTUP_WAIT) - now), () -> {
 						ready = true;
-						toast(type, icon, title, content);
+						toast(builder);
 					}));
 					return;
 				}
 			}
 			display.asyncExec(() -> {
 				synchronized (lock) {
-					int swtCode = typeToSWTCode(type);
+					int swtCode = typeToSWTCode(builder.type());
 					if (tip == null || swtCode != lastSwtCode) {
 						if (tip != null)
 							tip.dispose();
@@ -108,7 +108,7 @@ public class SWTToaster extends AbstractToaster {
 					} else {
 						timer.interrupt();
 					}
-					doShow(type, icon, title, content, display);
+					doShow(builder, display);
 				}
 			});
 		}
@@ -158,14 +158,15 @@ public class SWTToaster extends AbstractToaster {
 		return result[0];
 	}
 
-	private void doShow(ToastType type, String icon, String title, String content, Display display, ToastActionListener... listeners) {
-		tip.setMessage(content);
+	private void doShow(ToastBuilder builder, Display display) {
+		tip.setMessage(builder.content());
 		if (configuration.getParent() != null && lastImage == null) {
 			lastImage = item.getImage();
 		}
+		String icon = builder.icon();
 		if (icon == null || icon.length() == 0)
 			try {
-				item.setImage(getPlatformImage(getTypeImage(type)));
+				item.setImage(getPlatformImage(getTypeImage(builder.type())));
 			} catch (IOException e1) {
 				try {
 					item.setImage(getPlatformImage(getTypeImage(null)));
@@ -175,7 +176,7 @@ public class SWTToaster extends AbstractToaster {
 			}
 		else
 			item.setImage(getPlatformImage(new Image(display, icon)));
-		tip.setText(title);
+		tip.setText(builder.title());
 		item.setToolTip(tip);
 		tip.setVisible(true);
 		item.setVisible(true);
@@ -183,7 +184,7 @@ public class SWTToaster extends AbstractToaster {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(configuration.getTimeout() * 1000);
+					Thread.sleep((builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout()) * 1000);
 					synchronized (lock) {
 						ToolTip fTip = tip;
 						display.asyncExec(() -> {

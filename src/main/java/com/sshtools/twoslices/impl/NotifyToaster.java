@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sshtools.twoslices.AbstractToaster;
-import com.sshtools.twoslices.ToastActionListener;
+import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
-import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterSettings;
 
 /**
  * Implementation for linux that simply calls the <strong>notify-send</strong>
@@ -53,9 +53,11 @@ public class NotifyToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public void toast(ToastBuilder builder) {
 		List<String> args = new ArrayList<String>();
 		args.add("notify-send");
+		String icon = builder.icon();
+		ToastType type = builder.type();
 		if (icon == null || icon.length() == 0) {
 			switch (type) {
 			case NONE:
@@ -76,17 +78,17 @@ public class NotifyToaster extends AbstractToaster {
 			args.add(icon);
 		}
 		args.add("-t");
-		args.add(String.valueOf(configuration.getTimeout() * 1000));
-		args.add(title);
-		args.add(content);
+		args.add(String.valueOf((builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout() ) * 1000));
+		args.add(builder.title());
+		args.add(builder.content());
 		try {
 			Process p = new ProcessBuilder(args).redirectErrorStream(true).start();
 			while ((p.getInputStream().read()) != -1)
 				;
 			if (p.waitFor() != 0)
-				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title));
+				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, builder.title()));
 		} catch (IOException | InterruptedException ioe) {
-			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), ioe);
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, builder.title()), ioe);
 		}
 	}
 

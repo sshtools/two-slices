@@ -35,27 +35,8 @@ public interface Toaster {
 	/**
 	 * Display a notification message.
 	 * 
-	 * @param type type of message
-	 * @param title title of message
-	 * @param content content of message
-	 * @param listeners optional array of listeners that will be invoked if the
-	 *            toast is clicked. If listeners are not supported, the listeners
-	 *            will be silently ignored.
+	 * @param builder builder
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
-	void toast(ToastType type, String title, String content, ToastActionListener... listeners);
-
-	/**
-	 * Display a notification message.
-	 * 
-	 * @param type type of message
-	 * @param icon icon hint
-	 * @param title title of message
-	 * @param content content of message
-	 * @param listeners optional array of listeners that will be invoked if the
-	 *            toast is clicked. If listeners are not supported, the listeners
-	 *            will be silently ignored.
-	 * @throws ToasterException if there is a serious unrecoverable error.
-	 */
-	void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners);
+	void toast(ToastBuilder builder);
 }

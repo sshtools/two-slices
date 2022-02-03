@@ -25,18 +25,15 @@ import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
-import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastBuilder.ToastAction;
-import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.ToasterSettings;
-import com.sshtools.twoslices.impl.DBUSNotifyToaster.Notifications.ActionInvoked;
-import com.sshtools.twoslices.impl.DBUSNotifyToaster.Notifications.NotificationClosed;
 
 /**
  * Implementation for linux that uses the DBUS notification service.
@@ -78,6 +75,10 @@ public class DBUSNotifyToaster extends AbstractToaster {
 				this.reason = reason;
 			}
 
+			public UInt32 getReason() {
+				return reason;
+			}
+
 		}
 
 	}
@@ -89,6 +90,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 	class ActiveNotification {
 		List<ToastAction> actions;
 		UInt32 id;
+		ToastActionListener closed;
 	}
 
 	/**
@@ -100,44 +102,42 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		super(configuration);
 		try {
 			conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
-			
+
 			/* https://github.com/hypfvieh/dbus-java/issues/159 */
-			conn.changeThreadCount((byte)1);
-			
+//			conn.changeThreadCount((byte)1);
+
 			notifications = conn.getRemoteObject("org.freedesktop.Notifications", "/org/freedesktop/Notifications",
 					Notifications.class);
-			conn.addSigHandler(Notifications.ActionInvoked.class, notifications,
-					new DBusSigHandler<Notifications.ActionInvoked>() {
-						@Override
-						public void handle(ActionInvoked s) {
-							ActiveNotification active = null;
-							synchronized (actives) {
-								active = actives.get(s.id);
-								if (active != null) {
-									actives.remove(s.id);
-								}
-							}
-							if (active != null) {
-								for (ToastAction l : active.actions) {
-									if (l.name().equals(s.action) && l.listener() != null) {
-										l.listener().action();
-									}
-								}
-							}
+
+			conn.addSigHandler(Notifications.ActionInvoked.class, notifications, (s) -> {
+				ActiveNotification active = null;
+				synchronized (actives) {
+					active = actives.get(s.id);
+					if (active != null) {
+						actives.remove(s.id);
+					}
+				}
+				if (active != null) {
+					for (ToastAction l : active.actions) {
+						if (l.name().equals(s.action) && l.listener() != null) {
+							l.listener().action();
 						}
-					});
-			conn.addSigHandler(Notifications.NotificationClosed.class, notifications,
-					new DBusSigHandler<Notifications.NotificationClosed>() {
-						@Override
-						public void handle(NotificationClosed s) {
-							synchronized (actives) {
-								ActiveNotification active = actives.get(s.id);
-								if (active != null) {
-									actives.remove(s.id);
-								}
-							}
-						}
-					});
+					}
+					if(active.closed != null) {
+						active.closed.action();
+					}
+				}
+			});
+
+			conn.addSigHandler(Notifications.NotificationClosed.class, notifications, (s) -> {
+				synchronized (actives) {
+					ActiveNotification active = actives.get(s.id);
+					if (active != null) {
+						actives.remove(s.id);
+					}
+				}
+			});
+
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				public void run() {
 					try {
@@ -155,11 +155,13 @@ public class DBUSNotifyToaster extends AbstractToaster {
 
 	@Override
 	public void toast(ToastBuilder builder) {
-		List<String> args = new ArrayList<String>();
+		var args = new ArrayList<String>();
+		Map<String, Variant<?>> hints = new HashMap<>();
+		List<String> actions = new ArrayList<>();
 
 		args.add("notify-send");
-		String icon = builder.icon();
-		ToastType type = builder.type();
+		var icon = builder.icon();
+		var type = builder.type();
 
 		if (icon == null || icon.length() == 0) {
 			switch (type) {
@@ -176,8 +178,11 @@ public class DBUSNotifyToaster extends AbstractToaster {
 				}
 			}
 		}
-		List<String> actions = new ArrayList<>();
-		List<ToastAction> toastActions = builder.actions();
+		var image = builder.image();
+		if (image != null && image.length() > 0) {
+			hints.put("image-path", new Variant<String>(image));
+		}
+		var toastActions = builder.actions();
 		if (toastActions.size() > 0) {
 			actions.add("default");
 			actions.add(toastActions.get(0).displayName());
@@ -188,14 +193,18 @@ public class DBUSNotifyToaster extends AbstractToaster {
 				actions.add(toastActions.get(i).displayName());
 			}
 		}
-		ActiveNotification active = new ActiveNotification();
-		Map<String, Variant<?>> hints = new HashMap<>();
-		if(builder.timeout() == 0) {
-			hints.put("urgency", new Variant<Byte>(Byte.valueOf((byte)2)));
+		var active = new ActiveNotification();
+		if (builder.timeout() == 0) {
+			hints.put("urgency", new Variant<Byte>(Byte.valueOf((byte) 2)));
 		}
-		active.id = notifications.Notify(configuration.getAppName(), new UInt32(0), icon == null ? "" : icon, builder.title() == null ? "" : builder.title(), builder.content() == null ? "" : builder.content(), actions,
-				hints, ( builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout() ) * 1000);
+		var timeout = (builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout()) * 1000;
+		
+		active.id = notifications.Notify(configuration.getAppName(), new UInt32(0), icon == null ? "" : icon,
+				builder.title() == null ? "" : builder.title(), builder.content() == null ? "" : builder.content(),
+				actions, hints, timeout);
 		active.actions = toastActions;
+		active.closed = builder.closed();
+		
 		this.actives.put(active.id, active);
 	}
 

@@ -749,7 +749,6 @@ public class NotificationCenterToaster extends AbstractToaster {
 		public static class CGFloat implements NativeMapped {
 			private final double value;
 
-			@SuppressWarnings("UnusedDeclaration")
 			public CGFloat() {
 				this(0);
 			}
@@ -874,11 +873,15 @@ public class NotificationCenterToaster extends AbstractToaster {
 		List<ToastAction> actions = builder.actions();
 		if(actions.size() > 0) {
 			Foundation.invoke(notification, "setHasActionButton:", true);	
-			Foundation.invoke(notification, "setActionButtonTitle:",
-					Foundation.nsString(actions.get(0).displayName()));	
 			if(actions.size() > 1) {
-				Foundation.invoke(notification, "setOtherButtonTitle:",
+				Foundation.invoke(notification, "setActionButtonTitle:",
 						Foundation.nsString(actions.get(1).displayName()));
+				Foundation.invoke(notification, "setOtherButtonTitle:",
+						Foundation.nsString(actions.get(0).displayName()));
+			}
+			else {
+				Foundation.invoke(notification, "setActionButtonTitle:",
+						Foundation.nsString(actions.get(0).displayName()));	
 			}
 		}
 		

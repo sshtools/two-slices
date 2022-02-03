@@ -31,10 +31,16 @@ import com.sshtools.twoslices.ToasterSettings;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 /**
  * Fall-back notifier for when a native notification system cannot be located or
@@ -61,26 +67,56 @@ public class JavaFXToaster extends AbstractToaster {
 	@Override
 	public void toast(ToastBuilder builder) {
 		maybeRunLater(() -> {
-			Notifications n = Notifications.create();
+			var n = Notifications.create();
+			var type = builder.type();
 			n.title(builder.title());
 			n.text(builder.content());
 			n.threshold(3, Notifications.create().title("Collapsed Notification"));
 			List<Action> as = new ArrayList<>();
-			for(ToastAction a : builder.actions()) {
+			for (ToastAction a : builder.actions()) {
 				Action action = new Action(a.displayName(), (e) -> {
-					if(a.listener() != null)
+					if (a.listener() != null)
 						a.listener().action();
+					for(Window w : Stage.getWindows()) {
+						if(w instanceof Popup) {
+							Popup popup = (Popup)w;
+							Scene s = popup.getScene();
+							for(Node node : s.getRoot().getChildrenUnmodifiable()) {
+								if(node.getClass().getTypeName().startsWith("org.controlsfx.control.Notifications$NotificationPopupHandler")) {
+									popup.hide();
+									if (builder.closed() != null)
+										builder.closed().action();
+									return;
+								}
+							}
+						}
+					}
 				});
-				as.add(action);	
+				as.add(action);
+			}
+			if (builder.image() != null) {
+				var url = ensureURL(builder.image());
+				/*TODO load image on different thread first? */
+				var iview = new ImageView(new Image(url, false));
+				iview.setPreserveRatio(true);
+				var anchorPane = new AnchorPane(iview);
+				anchorPane.setMaxWidth(256);
+				anchorPane.setMaxHeight(256);
+				n.graphic(anchorPane);
+				type = ToastType.NONE;
 			}
 			n.action(as.toArray(new Action[0]));
+			n.darkStyle();
 			n.position(calcPos());
 			n.onAction((e) -> {
+				if (builder.closed() != null)
+					builder.closed().action();
 			});
 			if (configuration.getParent() == null) {
 				if (hidden == null && Utils.getWindow(null) == null) {
-					/* TODO  not entirely convinced the stage will always be hidden. 
-					 * Seems to be here on Linux Mint
+					/*
+					 * TODO not entirely convinced the stage will always be hidden. Seems to be here
+					 * on Linux Mint
 					 */
 					hidden = new Stage(StageStyle.UTILITY);
 					Text text = new Text(10, 40, " ");
@@ -88,26 +124,24 @@ public class JavaFXToaster extends AbstractToaster {
 					hidden.setScene(scene);
 					hidden.sizeToScene();
 				}
-				if(hidden != null)
+				if (hidden != null)
 					hidden.show();
-				Platform.runLater(() -> showNotification(builder.type(), n));
+				showNotification(type, n);
 			} else {
 				n.owner(configuration.getParent());
-				showNotification(builder.type(), n);
+				showNotification(type, n);
 			}
 		});
 	}
 
 	private Pos calcPos() {
-		if(configuration.getPosition() == null) {
-			if(System.getProperty("os.name", "").indexOf("Mac OS X") > -1) {
+		if (configuration.getPosition() == null) {
+			if (System.getProperty("os.name", "").indexOf("Mac OS X") > -1) {
 				return Pos.TOP_RIGHT;
-			}
-			else
+			} else
 				return Pos.BOTTOM_RIGHT;
-		}
-		else {
-			switch(configuration.getPosition()) {
+		} else {
+			switch (configuration.getPosition()) {
 			case TL:
 				return Pos.TOP_LEFT;
 			case T:

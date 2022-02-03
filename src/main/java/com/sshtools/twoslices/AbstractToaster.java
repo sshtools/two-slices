@@ -15,6 +15,9 @@
  */
 package com.sshtools.twoslices;
 
+import java.net.URL;
+import java.nio.file.Paths;
+
 public abstract class AbstractToaster implements Toaster {
 	
 	protected ToasterSettings configuration;
@@ -26,6 +29,16 @@ public abstract class AbstractToaster implements Toaster {
 	@Override
 	public boolean isActionsSupported() {
 		return false;
+	}
+	
+	protected static String ensureURL(String pathOrURL) {
+		try {
+			new URL(pathOrURL);
+			return pathOrURL;
+		}
+		catch(Exception e) {
+			return Paths.get(pathOrURL).toUri().toString();
+		}
 	}
 
 	protected String textIcon(ToastType messageType) {

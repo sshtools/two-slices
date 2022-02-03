@@ -20,6 +20,8 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -36,7 +38,7 @@ import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
  * Fall-back notifier for when a native notification system cannot be located or
  * used, and AWT toolkit is available.
  */
-public class AWTNotifier extends AbstractToaster {
+public class AWTNotifier extends AbstractToaster implements ActionListener {
 
 	private Thread timer;
 	private TrayIcon trayIcon;
@@ -60,54 +62,61 @@ public class AWTNotifier extends AbstractToaster {
 
 	@Override
 	public void toast(ToastBuilder builder) {
+		if(!EventQueue.isDispatchThread()) {
+			EventQueue.invokeLater(() -> toast(builder));
+			return;
+		}
+			
 		final SystemTray tray = SystemTray.getSystemTray();
-		EventQueue.invokeLater(() -> {
-			try {
-				if (trayIcon == null) {
-					if (configuration.getParent() != null) {
-						trayIcon = (TrayIcon) configuration.getParent();
-					} else if (builder.icon()== null || builder.icon().length() == 0) {
-						trayIcon = new TrayIcon(getPlatformImage(getTypeImage(builder.type())), builder.title());
-						tray.add(trayIcon);
-					}
-					else {
-						trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(builder.icon()))), builder.title());
-						tray.add(trayIcon);
-					}
-				} else {
-					if (builder.icon() == null || builder.icon().length() == 0) {
-						trayIcon.setImage(getPlatformImage(getTypeImage(builder.type())));
-					} else
-						trayIcon.setImage(getPlatformImage(ImageIO.read(new File(builder.icon()))));
-					trayIcon.setToolTip(builder.title());
-					if(timer != null)
-						timer.interrupt();
+		try {
+			if (trayIcon == null) {
+				if (configuration.getParent() != null) {
+					trayIcon = (TrayIcon) configuration.getParent();
+				} else if (builder.icon()== null || builder.icon().length() == 0) {
+					trayIcon = new TrayIcon(getPlatformImage(getTypeImage(builder.type())), builder.title());
+					tray.add(trayIcon);
 				}
-				trayIcon.displayMessage(builder.title(), builder.content(), TrayIcon.MessageType.valueOf(builder.type().name()));
-				timer = new Thread("AWTNotifierWait") {
-					@Override
-					public void run() {
-						try {
-							Thread.sleep(configuration.getTimeout() * 1000);
-							timer = null;
-							if (configuration.getSystemTrayIconMode() != SystemTrayIconMode.SHOW_DEFAULT_ALWAYS) {
-								if (configuration.getParent() == null) {
-									tray.remove(trayIcon);
-								}
-								trayIcon = null;
-							}
-						} catch (InterruptedException ie) {
-							// New one coming in
-						}
-					}
-				};
-				timer.start();
-			} catch (IOException ioe) {
-				throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), ioe);
-			} catch (AWTException e) {
-				throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), e);
+				else {
+					trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(builder.icon()))), builder.title());
+					tray.add(trayIcon);
+				}
+				trayIcon.addActionListener(this);
+			} else {
+				if (builder.icon() == null || builder.icon().length() == 0) {
+					trayIcon.setImage(getPlatformImage(getTypeImage(builder.type())));
+				} else
+					trayIcon.setImage(getPlatformImage(ImageIO.read(new File(builder.icon()))));
+				trayIcon.setToolTip(builder.title());
+				if(timer != null)
+					timer.interrupt();
 			}
-		});
+			trayIcon.displayMessage(builder.title(), builder.content(), TrayIcon.MessageType.valueOf(builder.type().name()));
+			timer = new Thread("AWTNotifierWait") {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(configuration.getTimeout() * 1000);
+						if(builder.closed() != null) {
+							builder.closed().action();
+						}
+						timer = null;
+						if (configuration.getSystemTrayIconMode() != SystemTrayIconMode.SHOW_DEFAULT_ALWAYS) {
+							if (configuration.getParent() == null) {
+								tray.remove(trayIcon);
+							}
+							trayIcon = null;
+						}
+					} catch (InterruptedException ie) {
+						// New one coming in
+					}
+				}
+			};
+			timer.start();
+		} catch (IOException ioe) {
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), ioe);
+		} catch (AWTException e) {
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), e);
+		}
 	}
 
 	private Image getPlatformImage(Image image) throws IOException {
@@ -138,5 +147,11 @@ public class AWTNotifier extends AbstractToaster {
 
 	private boolean hasTray() {
 		return SystemTray.isSupported();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		System.out.println("AL " + e);
+		
 	}
 }

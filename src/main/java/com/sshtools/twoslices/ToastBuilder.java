@@ -142,6 +142,8 @@ public class ToastBuilder {
 	private List<ToastAction> actions = new ArrayList<>();
 	private Toaster toaster;
 	private int timeout = -1;
+	private String image;
+	private ToastActionListener closed;
 	
 	/**
 	 * Reset everything except the toaster so builder can be re-used easily.
@@ -153,6 +155,9 @@ public class ToastBuilder {
 		title = null;
 		content = null;
 		actions.clear();
+		icon = null;
+		image = null;
+		closed = null;
 		return this;
 	}
 
@@ -219,20 +224,22 @@ public class ToastBuilder {
 	}
 
 	/**
-	 * Get the icon for this toast. The actual semantics of this string may vary
-	 * between platforms.
+	 * Get the icon for this toast. All notification systems support absolute path names to
+	 * file resources, as well as string representations of {@link URL}s. Some may
+	 * support logical names, such as Freedesktop Icon Names like "dialog-info".
 	 * 
-	 * @return icon
+	 * @return icon name or path
 	 */
 	public String icon() {
 		return icon;
 	}
 
 	/**
-	 * Set the icon for this toast. The actual semantics of this string may vary
-	 * between platforms.
+	 * Set the icon for this toast. All notification systems support absolute path names to
+	 * file resources, as well as string representations of {@link URL}s. Some may
+	 * support logical names, such as Freedesktop Icon Names like "dialog-info".
 	 * 
-	 * @param icon icon
+	 * @param icon icon name or path
 	 * @return this for chaining
 	 */
 	public ToastBuilder icon(String icon) {
@@ -240,6 +247,32 @@ public class ToastBuilder {
 		return this;
 	}
 
+	/**
+	 * Get the image for this toast. Some notification systems may support an additional
+	 * image as well as an {@link #icon()}. All notification systems support absolute path names to
+	 * file resources, as well as string representations of {@link URL}s. Some may
+	 * support logical names, such as Freedesktop Icon Names like "dialog-info".
+	 * 
+	 * @return icon name or path
+	 */
+	public String image() {
+		return image;
+	}
+
+	/**
+	 * Set the image for this toast. Some notification systems may support an additional
+	 * image as well as an {@link #icon()}. All notification systems support absolute path names to
+	 * file resources, as well as string representations of {@link URL}s. Some may
+	 * support logical names, such as Freedesktop Icon Names like "dialog-info".
+	 * 
+	 * @param icon icon name or path
+	 * @return this for chaining
+	 */
+	public ToastBuilder image(String image) {
+		this.image = image;
+		return this;
+	}
+	
 	/**
 	 * Get this title for this toast.
 	 * 
@@ -344,6 +377,25 @@ public class ToastBuilder {
 	 */
 	public ToastBuilder action(String name, String label, ToastActionListener listener) {
 		newAction(name).label(label).listener(listener);
+		return this;
+	}
+
+	/**
+	 * Get the listener invoked when the notification is closed.
+	 * 
+	 * @return closed listener
+	 */
+	public ToastActionListener closed() {
+		return closed;
+	}
+
+	/**
+	 * Set the listener for this action.
+	 * 
+	 * @param listener listener
+	 */
+	public ToastBuilder closed(ToastActionListener closed) {
+		this.closed = closed;
 		return this;
 	}
 

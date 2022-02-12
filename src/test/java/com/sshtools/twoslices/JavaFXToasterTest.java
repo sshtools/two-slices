@@ -16,12 +16,13 @@
 package com.sshtools.twoslices;
 
 import org.junit.Test;
+import org.testfx.framework.junit.ApplicationTest;
 
 import com.sshtools.twoslices.impl.JavaFXToaster;
 
-public class JavaFXToasterTest extends AbstractToasterTest {
+public class JavaFXToasterTest extends ApplicationTest {
 	@Test
 	public void testJavaFX() throws InterruptedException {
-		testToaster(new JavaFXToaster(new ToasterSettings()));
+		AbstractToasterTest.testToaster(new JavaFXToaster(new ToasterSettings()));
 	}
 }

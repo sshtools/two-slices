@@ -17,11 +17,11 @@ package com.sshtools.twoslices;
 
 import org.junit.Test;
 
-import com.sshtools.twoslices.impl.AWTNotifier;
+import com.sshtools.twoslices.impl.AWTToaster;
 
 public class AWTToasterTest extends AbstractToasterTest {
 	@Test
 	public void testAWT() throws InterruptedException {
-		testToaster(new AWTNotifier(new ToasterSettings()));
+		testToaster(new AWTToaster(new ToasterSettings()));
 	}
 }

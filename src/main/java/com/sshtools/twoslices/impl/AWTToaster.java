@@ -24,13 +24,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Capability;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
 
@@ -38,10 +43,18 @@ import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
  * Fall-back notifier for when a native notification system cannot be located or
  * used, and AWT toolkit is available.
  */
-public class AWTNotifier extends AbstractToaster implements ActionListener {
+public class AWTToaster extends AbstractToaster implements ActionListener {
 
 	private Thread timer;
 	private TrayIcon trayIcon;
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new AWTToaster(settings);
+		}
+	}
+	
 
 	/**
 	 * Constructor
@@ -49,8 +62,9 @@ public class AWTNotifier extends AbstractToaster implements ActionListener {
 	 * @param configuration
 	 *            configuration
 	 */
-	public AWTNotifier(ToasterSettings configuration) {
+	public AWTToaster(ToasterSettings configuration) {
 		super(configuration);
+		capabilities.addAll(Arrays.asList(Capability.IMAGES));
 		try {
 			Class.forName("java.awt.SystemTray");
 			if (!hasTray())
@@ -61,10 +75,10 @@ public class AWTNotifier extends AbstractToaster implements ActionListener {
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
 		if(!EventQueue.isDispatchThread()) {
 			EventQueue.invokeLater(() -> toast(builder));
-			return;
+			return Slice.defaultSlice();
 		}
 			
 		final SystemTray tray = SystemTray.getSystemTray();
@@ -117,6 +131,7 @@ public class AWTNotifier extends AbstractToaster implements ActionListener {
 		} catch (AWTException e) {
 			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), e);
 		}
+		return Slice.defaultSlice();
 	}
 
 	private Image getPlatformImage(Image image) throws IOException {

@@ -140,6 +140,7 @@ public class ToastBuilder {
 	private String content;
 	private String icon;
 	private List<ToastAction> actions = new ArrayList<>();
+	private ToastAction defaultAction;
 	private Toaster toaster;
 	private int timeout = -1;
 	private String image;
@@ -314,6 +315,15 @@ public class ToastBuilder {
 	}
 
 	/**
+	 * Get the default action
+	 * 
+	 * @return action
+	 */
+	public ToastAction defaultAction() {
+		return defaultAction;
+	}
+
+	/**
 	 * Get an unmodifiable list of all actions.
 	 * 
 	 * @return actions
@@ -331,6 +341,50 @@ public class ToastBuilder {
 		ToastAction a = new ToastAction(name);
 		actions.add(a);
 		return a;
+	}
+
+	/**
+	 * Create a new empty default action.
+	 * 
+	 * @return default action
+	 */
+	public ToastAction newDefaultAction() {
+		return defaultAction = new ToastAction("default");
+	}
+
+	/**
+	 * Convenience method to add a new named action with a label.
+	 * 
+	 * @param name name
+	 * @return this for chaining
+	 */
+	public ToastBuilder defaultAction(String label) {
+		newDefaultAction().label(label);
+		return this;
+	}
+
+	/**
+	 * Convenience method to add a new named action with a listener.
+	 * 
+	 * @param name name
+	 * @param listener listener
+	 * @return this for chaining
+	 */
+	public ToastBuilder defaultAction(ToastActionListener listener) {
+		newDefaultAction().listener(listener);
+		return this;
+	}
+
+	/**
+	 * Convenience method to add a new named action with a listener.
+	 * 
+	 * @param name name
+	 * @param listener listener
+	 * @return this for chaining
+	 */
+	public ToastBuilder defafultAction(String label, ToastActionListener listener) {
+		newDefaultAction().label(label).listener(listener);
+		return this;
 	}
 
 	/**
@@ -403,9 +457,9 @@ public class ToastBuilder {
 	 * Trigger a new notification message based on the configuration in this
 	 * builder.
 	 */
-	public void toast() {
+	public Slice toast() {
 		if(toaster == null)
 			throw new IllegalStateException("Toaster has not been set.");
-		toaster.toast(this);
+		return toaster.toast(this);
 	}
 }

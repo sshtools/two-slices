@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,10 +28,13 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Capability;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 
 /**
@@ -39,6 +43,14 @@ import com.sshtools.twoslices.ToasterSettings;
  * separate (paid) app.
  */
 public class GrowlToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new GrowlToaster(settings);
+		}
+	}
+	
 	private static final String GROWL = "com.Growl.GrowlHelperApp";
 	private ScriptEngine engine;
 	private Map<String, File> resourceIcons = new HashMap<>();
@@ -50,6 +62,7 @@ public class GrowlToaster extends AbstractToaster {
 	 */
 	public GrowlToaster(ToasterSettings configuration) {
 		super(configuration);
+		capabilities.addAll(Arrays.asList(Capability.IMAGES));
 		try {
 			engine = new ScriptEngineManager().getEngineByName("AppleScript");
 			if (engine == null)
@@ -79,7 +92,7 @@ public class GrowlToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
 		StringBuilder script = new StringBuilder();
 		script.append("tell application id \"");
 		script.append(GROWL);
@@ -107,6 +120,7 @@ public class GrowlToaster extends AbstractToaster {
 		} catch (ScriptException e) {
 			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), e);
 		}
+		return Slice.defaultSlice();
 	}
 	
 	private File getFileForType(ToastType type) {

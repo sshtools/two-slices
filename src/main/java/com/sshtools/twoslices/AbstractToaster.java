@@ -17,18 +17,22 @@ package com.sshtools.twoslices;
 
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public abstract class AbstractToaster implements Toaster {
 	
 	protected ToasterSettings configuration;
+	protected Set<Capability> capabilities = new LinkedHashSet<>();
 
 	protected AbstractToaster(ToasterSettings configuration) {
 		this.configuration = configuration;
 	}
 
 	@Override
-	public boolean isActionsSupported() {
-		return false;
+	public final Set<Capability> capabilities() {
+		return Collections.unmodifiableSet(capabilities);
 	}
 	
 	protected static String ensureURL(String pathOrURL) {

@@ -16,6 +16,8 @@
 package com.sshtools.twoslices;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.swt.widgets.TrayItem;
 
@@ -44,12 +46,22 @@ public class ToasterSettings {
 	private URL defaultImage;
 	private SystemTrayIconMode systemTrayIconMode = SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE;
 	private Position position;
+	private Map<String, Object> properties = new HashMap<>();
 
 	public ToasterSettings() {
 		try {
 			defaultImage = getClass().getResource("/images/idle-48.png");
 		} catch (Exception e) {
 		}
+	}
+
+	/**
+	 * Get the generic properties. These are used to pass toaster specific configuration.
+	 * 
+	 * @return properties
+	 */
+	public Map<String, Object> getProperties() {
+		return properties;
 	}
 
 	/**

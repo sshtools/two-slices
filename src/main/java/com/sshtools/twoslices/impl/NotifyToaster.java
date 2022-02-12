@@ -20,9 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 
 /**
@@ -30,6 +33,13 @@ import com.sshtools.twoslices.ToasterSettings;
  * command, which must be installed.
  */
 public class NotifyToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new NotifyToaster(settings);
+		}
+	}
 
 	/**
 	 * Constructor
@@ -53,7 +63,7 @@ public class NotifyToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
 		List<String> args = new ArrayList<String>();
 		args.add("notify-send");
 		String icon = builder.icon();
@@ -90,6 +100,7 @@ public class NotifyToaster extends AbstractToaster {
 		} catch (IOException | InterruptedException ioe) {
 			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, builder.title()), ioe);
 		}
+		return Slice.defaultSlice();
 	}
 
 }

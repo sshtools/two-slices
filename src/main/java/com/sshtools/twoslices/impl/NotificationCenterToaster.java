@@ -16,6 +16,7 @@
 package com.sshtools.twoslices.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -27,9 +28,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Capability;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.Toaster;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sun.jna.Callback;
 import com.sun.jna.FromNativeContext;
@@ -68,6 +72,13 @@ import com.sun.jna.ptr.PointerByReference;
  * the License.
  */
 public class NotificationCenterToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new NotificationCenterToaster(settings);
+		}
+	}
 
 	public static class StringUtil {
 
@@ -853,6 +864,7 @@ public class NotificationCenterToaster extends AbstractToaster {
 		super(configuration);
 		if(!Platform.isMac())
 			throw new UnsupportedOperationException();
+		capabilities.addAll(Arrays.asList(Capability.IMAGES, Capability.ACTIONS, Capability.CLOSE));
 		// TODO check mountain lion or higher
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -863,7 +875,7 @@ public class NotificationCenterToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
 		final ID notification = Foundation.invoke(Foundation.getObjcClass("NSUserNotification"), "new");
 		Foundation.invoke(notification, "setTitle:",
 				Foundation.nsString(StringUtil.stripHtml(builder.title(), true).replace("%", "%%")));
@@ -888,6 +900,14 @@ public class NotificationCenterToaster extends AbstractToaster {
 		final ID center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
 				"defaultUserNotificationCenter");
 		Foundation.invoke(center, "deliverNotification:", notification);
+		
+		return new Slice() {
+			
+			@Override
+			public void close() throws IOException {
+				Foundation.invoke(notification, "removeDeliveredNotification:", notification);	
+			}
+		};
 	}
 
 	private static void cleanupDeliveredNotifications() {

@@ -25,11 +25,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Arrays;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Capability;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 
 /**
@@ -37,6 +42,14 @@ import com.sshtools.twoslices.ToasterSettings;
  * Protocol, GNTP.
  */
 public class GNTPToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new GNTPToaster(settings);
+		}
+	}
+	
 	public final static int DEFAULT_PORT = 23053;
 
 	/**
@@ -46,6 +59,7 @@ public class GNTPToaster extends AbstractToaster {
 	 */
 	public GNTPToaster(ToasterSettings configuration) {
 		super(configuration);
+		capabilities.addAll(Arrays.asList(Capability.IMAGES));
 		try {
 			register();
 		} catch (ToasterException te) {
@@ -54,7 +68,7 @@ public class GNTPToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
 		try (Socket socket = new Socket(InetAddress.getLocalHost(), DEFAULT_PORT)) {
 			OutputStream out = socket.getOutputStream();
 			out.write(String.format("GNTP/1.0 %s %s\r\n", "NOTIFY", "NONE").getBytes("UTF-8"));
@@ -69,6 +83,7 @@ public class GNTPToaster extends AbstractToaster {
 			out.write("\r\n".getBytes("UTF-8"));
 			out.flush();
 			readResponse(socket.getInputStream());
+			return Slice.defaultSlice();
 		} catch (Exception e) {
 			throw new ToasterException(e);
 		}

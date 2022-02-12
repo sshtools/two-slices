@@ -41,14 +41,15 @@ public class Toast {
 	 * @param listeners optional array of listeners that will be invoked if the
 	 *            toast is clicked. If listeners are not supported, the listeners
 	 *            will be silently ignored.
+	 * @return handle to message
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
-	public static void toast(ToastType type, String title, String content, ToastActionListener... listeners) {
+	public static Slice toast(ToastType type, String title, String content, ToastActionListener... listeners) {
 		ToastBuilder builder = builder().type(type).title(title).content(content);
 		for(ToastActionListener l : listeners) {
 			builder.action(l.toString(), () -> l.action());
 		}
-		builder.toast();
+		return builder.toast();
 	}
 
 	/**
@@ -61,13 +62,14 @@ public class Toast {
 	 * @param listeners optional array of listeners that will be invoked if the
 	 *            toast is clicked. If listeners are not supported, the listeners
 	 *            will be silently ignored.
+	 * @return handle to message
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
-	public static void toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
+	public static Slice toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
 		ToastBuilder builder = builder().type(type).title(title).icon(icon).content(content);
 		for(ToastActionListener l : listeners) {
 			builder.action(l.toString(), () -> l.action());
 		}
-		builder.toast();
+		return builder.toast();
 	}
 }

@@ -15,6 +15,8 @@
  */
 package com.sshtools.twoslices;
 
+import java.util.Set;
+
 /**
  * Interface to be implemented by all OS specific providers of notification
  * messages. For clients in general, there is no need to directly use methods.
@@ -22,21 +24,20 @@ package com.sshtools.twoslices;
  */
 public interface Toaster {
 	/**
-	 * Return if listeners are supported. If so, a {@link ToastActionListener} may
-	 * be provided to both
-	 * {@link #toast(ToastType, String, String, ToastActionListener...)} and
-	 * {@link #toast(ToastType, String, String, String, ToastActionListener...)}.
-	 * If listeners are not supported, the listeners will be silently ignored.
+	 * Get the capabilities for this toaster.
 	 * 
-	 * @return listeners are supported
+	 * @return capabilities
 	 */
-	boolean isActionsSupported();
+	Set<Capability> capabilities();
 
 	/**
-	 * Display a notification message.
+	 * Display a notification message. A handle to the notification message
+	 * (allowing programmatic closing etc) will be always be returned, but
+	 * the operations it provides may be always be supported.
 	 * 
 	 * @param builder builder
+	 * @return handle to notification message. 
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
-	void toast(ToastBuilder builder);
+	Slice toast(ToastBuilder builder);
 }

@@ -15,16 +15,7 @@
  */
 package com.sshtools.twoslices;
 
-import com.sshtools.twoslices.impl.AWTNotifier;
-import com.sshtools.twoslices.impl.DBUSNotifyToaster;
-import com.sshtools.twoslices.impl.GNTPToaster;
-import com.sshtools.twoslices.impl.GrowlToaster;
-import com.sshtools.twoslices.impl.JavaFXToaster;
-import com.sshtools.twoslices.impl.NotificationCenterToaster;
-import com.sshtools.twoslices.impl.NotifyToaster;
-import com.sshtools.twoslices.impl.OsXToaster;
-import com.sshtools.twoslices.impl.SWTToaster;
-import com.sshtools.twoslices.impl.SysOutNotifier;
+import java.util.ServiceLoader;
 
 /**
  * Responsible for creating a {@link Toaster} instance based on the current
@@ -44,11 +35,12 @@ import com.sshtools.twoslices.impl.SysOutNotifier;
  *
  */
 public abstract class ToasterFactory {
+
 	/**
 	 * Default {@link ToasterFactory} that will lazily create a {@link Toaster} by
 	 * trying all implementations until a supported one is found.
 	 */
-	public static class DefaultToasterFactory extends ToasterFactory {
+	public static class ServicesToasterFactory extends ToasterFactory {
 		private Toaster instance;
 		private Object lock = new Object();
 
@@ -56,45 +48,14 @@ public abstract class ToasterFactory {
 		public Toaster toaster() {
 			synchronized (lock) {
 				if (instance == null) {
-					try {
-						instance = new GNTPToaster(settings);
-					} catch (UnsupportedOperationException uoe0) {
+					for (ToasterService toaster : ServiceLoader.load(ToasterService.class)) {
 						try {
-							instance = new DBUSNotifyToaster(settings);
-						} catch (UnsupportedOperationException uoe1) {
-							try {
-								instance = new NotifyToaster(settings);
-							} catch (UnsupportedOperationException uoe2) {
-								try {
-									instance = new GrowlToaster(settings);
-								} catch (UnsupportedOperationException uoe3) {
-									try {
-										instance = new NotificationCenterToaster(settings);
-									}
-									catch (NoClassDefFoundError | UnsupportedOperationException uoe3b) {
-										try {
-											instance = new OsXToaster(settings);
-										} catch (NoClassDefFoundError | UnsupportedOperationException uoe5) {
-											try {
-												instance = new SWTToaster(settings);
-											} catch (NoClassDefFoundError | UnsupportedOperationException uoe6) {
-												try {
-													instance = new JavaFXToaster(settings);
-												} catch (NoClassDefFoundError | UnsupportedOperationException uoe7) {
-													try {
-														instance = new AWTNotifier(settings);
-													} catch (Exception uoe8) {
-														instance = new SysOutNotifier(settings);
-													}
-												}
-											}
-										}
-									}
-									
-								}
-							}
+							return instance = toaster.create(settings);
+						}
+						catch(Exception e) {
 						}
 					}
+					throw new UnsupportedOperationException("No toasters available.");
 				}
 				return instance;
 			}
@@ -114,7 +75,7 @@ public abstract class ToasterFactory {
 	public static ToasterFactory getFactory() {
 		synchronized (lock) {
 			if (instance == null)
-				new DefaultToasterFactory();
+				instance = new ServicesToasterFactory();
 			return instance;
 		}
 	}

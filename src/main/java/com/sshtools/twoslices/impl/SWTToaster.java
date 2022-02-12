@@ -16,6 +16,7 @@
 package com.sshtools.twoslices.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -29,8 +30,12 @@ import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.swt.widgets.TrayItem;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Capability;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastType;
+import com.sshtools.twoslices.Toaster;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
 
@@ -44,6 +49,14 @@ import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
  * the parent of the balloon messages.
  */
 public class SWTToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new SWTToaster(settings);
+		}
+	}
+	
 	/**
 	 * On Linux Cinnamon (probably others?), if we don't wait for a short while
 	 * after the tray item has been added for it to actually be shown on the
@@ -63,6 +76,41 @@ public class SWTToaster extends AbstractToaster {
 	private ToolTip tip;
 	private Image lastImage;
 	private int lastSwtCode;
+	
+	class SWTSlice implements Slice {
+		
+		private Display display;
+		private boolean closed = false;
+
+		@Override
+		public void close() throws IOException {
+			synchronized (lock) {
+				if(closed)
+					return;
+				closed = true;
+				ToolTip fTip = tip;
+				display.asyncExec(() -> {
+					if (fTip != null)
+						fTip.dispose();
+					if (configuration.getParent() == null) {
+						try {
+							item.setImage(getPlatformImage(getTypeImage(null)));
+						} catch (IOException e) {
+							item.setVisible(false);
+							ready = false;
+						}
+					} else {
+						if (lastImage != null) {
+							item.setImage(lastImage);
+							lastImage = null;
+						}
+					}
+				});
+				tip = null;
+			}
+		}
+		
+	}
 
 	/**
 	 * Constructor
@@ -76,6 +124,7 @@ public class SWTToaster extends AbstractToaster {
 			if (!hasTray())
 				throw new UnsupportedOperationException();
 			started = System.currentTimeMillis();
+			capabilities.addAll(Arrays.asList(Capability.IMAGES, Capability.CLOSE));
 			init();
 		} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
 			throw new UnsupportedOperationException();
@@ -83,7 +132,12 @@ public class SWTToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
+		var slice = new SWTSlice(); 
+		return doToast(builder, slice);
+	}
+
+	protected Slice doToast(ToastBuilder builder, SWTSlice slice) {
 		synchronized (lock) {
 			Display display = Display.getDefault();
 			if (!ready) {
@@ -91,9 +145,9 @@ public class SWTToaster extends AbstractToaster {
 				if (now < started + STARTUP_WAIT) {
 					display.asyncExec(() -> display.timerExec((int) ((started + STARTUP_WAIT) - now), () -> {
 						ready = true;
-						toast(builder);
+						doToast(builder, slice);
 					}));
-					return;
+					return slice;
 				}
 			}
 			display.asyncExec(() -> {
@@ -108,9 +162,10 @@ public class SWTToaster extends AbstractToaster {
 					} else {
 						timer.interrupt();
 					}
-					doShow(builder, display);
+					doShow(builder, display, slice);
 				}
 			});
+			return slice;
 		}
 	}
 
@@ -158,7 +213,8 @@ public class SWTToaster extends AbstractToaster {
 		return result[0];
 	}
 
-	private void doShow(ToastBuilder builder, Display display) {
+	private void doShow(ToastBuilder builder, Display display, SWTSlice slice) {
+		slice.display = display;
 		tip.setMessage(builder.content());
 		if (configuration.getParent() != null && lastImage == null) {
 			lastImage = item.getImage();
@@ -180,33 +236,18 @@ public class SWTToaster extends AbstractToaster {
 		item.setToolTip(tip);
 		tip.setVisible(true);
 		item.setVisible(true);
+		if(timer != null) {
+			timer.interrupt();
+		}
 		timer = new Thread("SWTNotifierWait") {
 			@Override
 			public void run() {
 				try {
 					Thread.sleep((builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout()) * 1000);
-					synchronized (lock) {
-						ToolTip fTip = tip;
-						display.asyncExec(() -> {
-							if (fTip != null)
-								fTip.dispose();
-							if (configuration.getParent() == null) {
-								try {
-									item.setImage(getPlatformImage(getTypeImage(null)));
-								} catch (IOException e) {
-									item.setVisible(false);
-									ready = false;
-								}
-							} else {
-								if (lastImage != null) {
-									item.setImage(lastImage);
-									lastImage = null;
-								}
-							}
-						});
-						tip = null;
-					}
-				} catch (InterruptedException ie) {
+					slice.close();
+				} catch (Exception ie) {
+				} finally {
+					slice.closed = true;
 				}
 			}
 		};

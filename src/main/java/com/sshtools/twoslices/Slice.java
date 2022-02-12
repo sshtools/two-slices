@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * This packages contains the main classes that will be used in client code
- * making use of the <i>Two-slices</i> library.
- * <p>
- * The three classes you are most likely to want to use include :-
- * <ul>
- * <li>{@link com.sshtools.twoslices.Toast} - the utility class for popup notifications.</li>
- * <li>{@link com.sshtools.twoslices.ToastActionListener} - if you want actions in your notifications</li>
- * <li>{@link com.sshtools.twoslices.ToasterSettings} - for application wide settings</li>.
- * </ul>
- */
 package com.sshtools.twoslices;
+
+import java.io.Closeable;
+import java.io.IOException;
+
+/**
+ * Used as a handle to generated notifications, allowing them to be closed
+ * prematurely programmatically when supported by the underlying toaster
+ * implementation.
+ *
+ */
+public interface Slice extends Closeable {
+
+	public static Slice defaultSlice() {
+		return new Slice() {
+			@Override
+			public void close() throws IOException {
+				throw new UnsupportedOperationException();
+			}
+		};
+	};
+}

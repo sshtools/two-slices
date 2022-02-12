@@ -16,13 +16,23 @@
 package com.sshtools.twoslices.impl;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
+import com.sshtools.twoslices.Toaster;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 
 /**
  * Last resort implementation that outputs to the console.
  */
-public class SysOutNotifier extends AbstractToaster {
+public class SysOutToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new SysOutToaster(settings);
+		}
+	}
 
 	/**
 	 * Constructor
@@ -30,13 +40,14 @@ public class SysOutNotifier extends AbstractToaster {
 	 * @param configuration
 	 *            configuration
 	 */
-	public SysOutNotifier(ToasterSettings configuration) {
+	public SysOutToaster(ToasterSettings configuration) {
 		super(configuration);
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
 		System.out.println(String.format("[%1s] %s - %s", textIcon(builder.type()), builder.title(), builder.content()));
+		return Slice.defaultSlice();
 	}
 
 }

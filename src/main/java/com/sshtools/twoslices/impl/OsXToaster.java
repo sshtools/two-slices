@@ -18,9 +18,11 @@ package com.sshtools.twoslices.impl;
 import java.io.IOException;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterException;
+import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 
 /**
@@ -29,6 +31,14 @@ import com.sshtools.twoslices.ToasterSettings;
  * separate (paid) app.
  */
 public class OsXToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new OsXToaster(settings);
+		}
+	}
+	
 	public OsXToaster(ToasterSettings configuration) {
 		super(configuration);
 		ProcessBuilder b = new ProcessBuilder("osascript", "-?");
@@ -45,7 +55,7 @@ public class OsXToaster extends AbstractToaster {
 	}
 
 	@Override
-	public void toast(ToastBuilder builder) {
+	public Slice toast(ToastBuilder builder) {
 		String t = textIcon(builder.type());
 		StringBuilder script = new StringBuilder();
 		script.append("display notification \"");
@@ -64,6 +74,7 @@ public class OsXToaster extends AbstractToaster {
 		} catch (IOException | InterruptedException ioe) {
 			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), ioe);
 		}
+		return Slice.defaultSlice();
 	}
 
 	private String escape(String text) {

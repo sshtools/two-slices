@@ -1,14 +1,5 @@
 {
   "resources":{
-  "includes":[
-    {"pattern":"\\Qcom/sun/glass/utils/NativeLibLoader.class\\E"}, 
-    {"pattern":"\\Qimages/dialog-error-48.png\\E"}, 
-    {"pattern":"\\Qimages/dialog-info-48.png\\E"}, 
-    {"pattern":"\\Qimages/dialog-warning-48.png\\E"}, 
-    {"pattern":"\\Qimages/idle-48.png\\E"}, 
-    {"pattern":"\\Qlibglass.so\\E"}, 
-    {"pattern":"\\Qlibglassgtk3.so\\E"}, 
-    {"pattern":"\\Qlibprism_es2.so\\E"}
-  ]},
-  "bundles":[]
+  "includes":[]},
+  "bundles":[{"name":"sun.awt.resources.awt"}]
 }

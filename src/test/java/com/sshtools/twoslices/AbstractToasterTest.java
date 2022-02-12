@@ -15,12 +15,8 @@
  */
 package com.sshtools.twoslices;
 
-import java.io.File;
-
-import org.testfx.framework.junit.ApplicationTest;
-
-public class AbstractToasterTest extends ApplicationTest {
-	public void testToaster(Toaster toaster) throws InterruptedException {
+public class AbstractToasterTest {
+	public static void testToaster(Toaster toaster) throws InterruptedException {
 		ToastBuilder builder = new ToastBuilder();
 		builder.toaster(toaster);
 //		builder.type(ToastType.NONE).title("Test Title").content("Test Content").toast();

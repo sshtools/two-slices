@@ -19,10 +19,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.swt.widgets.TrayItem;
-
-import com.sshtools.twoslices.impl.SWTToaster;
-
 /**
  * Allows some configuration of notification messages and their behaviour. These
  * are only hints, providers have no obligation to support any or all of these.

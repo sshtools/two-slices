@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolTip;
@@ -88,7 +87,7 @@ public class SWTToaster extends AbstractToaster {
 				if(closed)
 					return;
 				closed = true;
-				ToolTip fTip = tip;
+				var fTip = tip;
 				display.asyncExec(() -> {
 					if (fTip != null)
 						fTip.dispose();
@@ -133,15 +132,14 @@ public class SWTToaster extends AbstractToaster {
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		var slice = new SWTSlice(); 
-		return doToast(builder, slice);
+		return doToast(builder, new SWTSlice());
 	}
 
 	protected Slice doToast(ToastBuilder builder, SWTSlice slice) {
 		synchronized (lock) {
-			Display display = Display.getDefault();
+			var display = Display.getDefault();
 			if (!ready) {
-				long now = System.currentTimeMillis();
+				var now = System.currentTimeMillis();
 				if (now < started + STARTUP_WAIT) {
 					display.asyncExec(() -> display.timerExec((int) ((started + STARTUP_WAIT) - now), () -> {
 						ready = true;
@@ -152,7 +150,7 @@ public class SWTToaster extends AbstractToaster {
 			}
 			display.asyncExec(() -> {
 				synchronized (lock) {
-					int swtCode = typeToSWTCode(builder.type());
+					var swtCode = typeToSWTCode(builder.type());
 					if (tip == null || swtCode != lastSwtCode) {
 						if (tip != null)
 							tip.dispose();
@@ -188,14 +186,14 @@ public class SWTToaster extends AbstractToaster {
 		 * we don't know if there is a dispatch thread running, we submit a task
 		 * and wait a short while.
 		 */
-		Display d = Display.getDefault();
+		var d = Display.getDefault();
 		try {
 			if (d == null || d.getSystemTray() == null)
 				return false;
 		} catch (SWTException e) {
 		}
-		final boolean[] result = new boolean[1];
-		final Semaphore sem = new Semaphore(1);
+		final var result = new boolean[1];
+		final var sem = new Semaphore(1);
 		try {
 			sem.acquire();
 			try {
@@ -219,7 +217,7 @@ public class SWTToaster extends AbstractToaster {
 		if (configuration.getParent() != null && lastImage == null) {
 			lastImage = item.getImage();
 		}
-		String icon = builder.icon();
+		var icon = builder.icon();
 		if (icon == null || icon.length() == 0)
 			try {
 				item.setImage(getPlatformImage(getTypeImage(builder.type())));
@@ -255,7 +253,7 @@ public class SWTToaster extends AbstractToaster {
 	}
 
 	private void init() {
-		Display display = Display.getDefault();
+		var display = Display.getDefault();
 		display.syncExec(() -> {
 			if (configuration.getParent() != null && configuration.getParent() instanceof TrayItem) {
 				item = (TrayItem) configuration.getParent();
@@ -267,21 +265,21 @@ public class SWTToaster extends AbstractToaster {
 	}
 
 	private Image getPlatformImage(Image image) {
-		String osname = System.getProperty("os.name");
+		var osname = System.getProperty("os.name");
 		int sz = 48;
 		if (osname.toLowerCase().indexOf("windows") != -1)
 			sz = 16;
 		else if (osname.toLowerCase().indexOf("linux") != -1)
 			sz = 24;
-		ImageData data = image.getImageData();
+		var data = image.getImageData();
 		data = data.scaledTo(sz, sz);
-		Image img = new Image(image.getDevice(), data, data);
+		var img = new Image(image.getDevice(), data, data);
 		image.dispose();
 		return img;
 	}
 
 	private Image getTypeImage(ToastType type) throws IOException {
-		Display d = Display.getDefault();
+		var d = Display.getDefault();
 		if (configuration.getSystemTrayIconMode() == SystemTrayIconMode.HIDDEN) {
 			return new Image(d, getClass().getResourceAsStream("/images/blank-48.gif"));
 		} else if (type == null || ((configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE

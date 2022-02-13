@@ -81,7 +81,7 @@ public class AWTToaster extends AbstractToaster implements ActionListener {
 			return Slice.defaultSlice();
 		}
 			
-		final SystemTray tray = SystemTray.getSystemTray();
+		final var tray = SystemTray.getSystemTray();
 		try {
 			if (trayIcon == null) {
 				if (configuration.getParent() != null) {
@@ -135,7 +135,7 @@ public class AWTToaster extends AbstractToaster implements ActionListener {
 	}
 
 	private Image getPlatformImage(Image image) throws IOException {
-		String osname = System.getProperty("os.name");
+		var osname = System.getProperty("os.name");
 		int sz = 48;
 		if (osname.toLowerCase().indexOf("windows") != -1)
 			sz = 16;
@@ -146,7 +146,7 @@ public class AWTToaster extends AbstractToaster implements ActionListener {
 
 	private Image getTypeImage(ToastType type) throws IOException {
 		if (configuration.getSystemTrayIconMode() == SystemTrayIconMode.HIDDEN) {
-			String osname = System.getProperty("os.name");
+			var osname = System.getProperty("os.name");
 			if (osname.toLowerCase().indexOf("windows") != -1)
 				return ImageIO.read(getClass().getResource("/images/blank-48.gif"));
 			else
@@ -166,7 +166,5 @@ public class AWTToaster extends AbstractToaster implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("AL " + e);
-		
 	}
 }

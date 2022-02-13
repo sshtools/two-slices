@@ -17,12 +17,10 @@ package com.sshtools.twoslices.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
-import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterException;
 import com.sshtools.twoslices.ToasterService;
@@ -49,10 +47,10 @@ public class NotifyToaster extends AbstractToaster {
 	 */
 	public NotifyToaster(ToasterSettings configuration) {
 		super(configuration);
-		ProcessBuilder b = new ProcessBuilder("notify-send", "--help");
+		var b = new ProcessBuilder("notify-send", "--help");
 		try {
 			b.redirectErrorStream(true);
-			Process p = b.start();
+			var p = b.start();
 			while ((p.getInputStream().read()) != -1)
 				;
 			if (p.waitFor() != 0)
@@ -64,10 +62,10 @@ public class NotifyToaster extends AbstractToaster {
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		List<String> args = new ArrayList<String>();
+		var args = new ArrayList<String>();
 		args.add("notify-send");
-		String icon = builder.icon();
-		ToastType type = builder.type();
+		var icon = builder.icon();
+		var type = builder.type();
 		if (icon == null || icon.length() == 0) {
 			switch (type) {
 			case NONE:

@@ -41,10 +41,10 @@ public class OsXToaster extends AbstractToaster {
 	
 	public OsXToaster(ToasterSettings configuration) {
 		super(configuration);
-		ProcessBuilder b = new ProcessBuilder("osascript", "-?");
+		var b = new ProcessBuilder("osascript", "-?");
 		try {
 			b.redirectErrorStream(true);
-			Process p = b.start();
+			var p = b.start();
 			while ((p.getInputStream().read()) != -1)
 				;
 			if (p.waitFor() != 2 && p.exitValue() != 0)
@@ -56,17 +56,17 @@ public class OsXToaster extends AbstractToaster {
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		String t = textIcon(builder.type());
-		StringBuilder script = new StringBuilder();
+		var t = textIcon(builder.type());
+		var script = new StringBuilder();
 		script.append("display notification \"");
 		script.append(escape(builder.content()));
 		script.append("\" with title \"");
 		script.append(escape(t.length() == 0 ? builder.title() : (t + " " + builder.title())));
 		script.append("\"");
-		ProcessBuilder b = new ProcessBuilder("osascript", "-e", script.toString());
+		var b = new ProcessBuilder("osascript", "-e", script.toString());
 		try {
 			b.redirectErrorStream(true);
-			Process p = b.start();
+			var p = b.start();
 			while ((p.getInputStream().read()) != -1)
 				;
 			if (p.waitFor() != 0)

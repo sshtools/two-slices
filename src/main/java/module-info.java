@@ -1,4 +1,3 @@
-
 /**
  * Copyright © 2018 SSHTOOLS Limited (support@sshtools.com)
  *

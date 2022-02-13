@@ -17,7 +17,7 @@ package com.sshtools.twoslices;
 
 public class AbstractToasterTest {
 	public static void testToaster(Toaster toaster) throws InterruptedException {
-		ToastBuilder builder = new ToastBuilder();
+		var builder = new ToastBuilder();
 		builder.toaster(toaster);
 //		builder.type(ToastType.NONE).title("Test Title").content("Test Content").toast();
 //		Thread.sleep(5000);

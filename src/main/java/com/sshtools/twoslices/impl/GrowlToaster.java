@@ -93,7 +93,7 @@ public class GrowlToaster extends AbstractToaster {
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		StringBuilder script = new StringBuilder();
+		var script = new StringBuilder();
 		script.append("tell application id \"");
 		script.append(GROWL);
 		script.append("\"\n");
@@ -105,7 +105,7 @@ public class GrowlToaster extends AbstractToaster {
 		script.append(escape(builder.content()));
 		script.append("\" application name \"");
 		script.append(escape(configuration.getAppName()));
-		String icon = builder.icon();
+		var icon = builder.icon();
 		if(icon == null || icon.length() == 0) {
 			script.append("\" image from location \"file://");
 			script.append(getFileForType(builder.type()).getAbsolutePath().toString());
@@ -125,11 +125,11 @@ public class GrowlToaster extends AbstractToaster {
 	
 	private File getFileForType(ToastType type) {
 		synchronized(resourceIcons) {
-			String key = type == null ? "" : type.name();
-			File v = resourceIcons.get(key);
+			var key = type == null ? "" : type.name();
+			var v = resourceIcons.get(key);
 			if(v == null) {
 				try {
-					File f = File.createTempFile("two-slices", ".png");
+					var f = File.createTempFile("two-slices", ".png");
 					f.deleteOnExit();
 					try(InputStream in = getClass().getResourceAsStream("/images/" + (type == null ? "idle-48.png" : ("dialog-" + type.name().toLowerCase() + "-48.png")))) {
 						try(FileOutputStream out = new FileOutputStream(f)) {
@@ -151,7 +151,7 @@ public class GrowlToaster extends AbstractToaster {
 	}
 
 	private String array(String[] array) {
-		StringBuilder bui = new StringBuilder();
+		var bui = new StringBuilder();
 		bui.append("{");
 		for (String s : array) {
 			if (bui.length() > 1) {
@@ -170,7 +170,7 @@ public class GrowlToaster extends AbstractToaster {
 	}
 
 	private boolean canGrowl() {
-		StringBuilder script = new StringBuilder();
+		var script = new StringBuilder();
 		script.append("tell application \"System Events\"\nreturn count of (every process whose bundle identifier is \"");
 		script.append(GROWL);
 		script.append("\") > 0\nend tell");

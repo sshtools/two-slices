@@ -70,7 +70,7 @@ public class GNTPToaster extends AbstractToaster {
 	@Override
 	public Slice toast(ToastBuilder builder) {
 		try (Socket socket = new Socket(InetAddress.getLocalHost(), DEFAULT_PORT)) {
-			OutputStream out = socket.getOutputStream();
+			var out = socket.getOutputStream();
 			out.write(String.format("GNTP/1.0 %s %s\r\n", "NOTIFY", "NONE").getBytes("UTF-8"));
 			out.write(String.format("Application-Name: %s\r\n", configuration.getAppName()).getBytes("UTF-8"));
 			out.write(String.format("Notification-Name: %s\r\n", builder.type().name()).getBytes("UTF-8"));

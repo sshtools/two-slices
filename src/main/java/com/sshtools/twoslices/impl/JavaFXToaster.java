@@ -174,8 +174,8 @@ public class JavaFXToaster extends AbstractToaster {
 					Notifications.create().title((String) configuration.getProperties().getOrDefault(COLLAPSE_MESSAGE,
 							"Collapsed Notifications")));
 			List<Action> as = new ArrayList<>();
-			for (ToastAction a : builder.actions()) {
-				Action action = new Action(a.displayName(), (e) -> {
+			for (var a : builder.actions()) {
+				var action = new Action(a.displayName(), (e) -> {
 					if (a.listener() != null)
 						a.listener().action();
 					findPopup(builder.title(), builder.content()).hide();
@@ -210,8 +210,8 @@ public class JavaFXToaster extends AbstractToaster {
 					 * on Linux Mint
 					 */
 					hidden = new Stage(StageStyle.UTILITY);
-					Text text = new Text(10, 40, " ");
-					Scene scene = new Scene(new Group(text));
+					var text = new Text(10, 40, " ");
+					var scene = new Scene(new Group(text));
 					hidden.setScene(scene);
 					hidden.sizeToScene();
 				}
@@ -227,11 +227,11 @@ public class JavaFXToaster extends AbstractToaster {
 	}
 	
 	private Popup findPopup(String title, String content) {
-		for (Window w : Stage.getWindows()) {
+		for (var w : Stage.getWindows()) {
 			if (w instanceof Popup) {
-				Popup popup = (Popup) w;
-				Scene s = popup.getScene();
-				for (Node node : s.getRoot().getChildrenUnmodifiable()) {
+				var popup = (Popup) w;
+				var s = popup.getScene();
+				for (var node : s.getRoot().getChildrenUnmodifiable()) {
 					if (node.getClass().getTypeName()
 							.startsWith("org.controlsfx.control.Notifications$NotificationPopupHandler")) {
 						return popup;

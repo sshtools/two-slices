@@ -42,7 +42,7 @@ public enum ToastType {
 	 */
 	public static String[] names() {
 		ToastType[] v = values();
-		String[] n = new String[v.length];
+		var n = new String[v.length];
 		for (int i = 0; i < v.length; i++)
 			n[i] = v[i].name();
 		return n;

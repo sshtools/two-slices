@@ -23,7 +23,7 @@ import com.sshtools.twoslices.impl.SWTToaster;
 public class SWTToasterTest extends AbstractToasterTest {
 	@Test
 	public void testSWT() {
-		Display display = Display.getDefault();
+		var display = Display.getDefault();
 		new Thread() {
 			public void run() {
 				try {

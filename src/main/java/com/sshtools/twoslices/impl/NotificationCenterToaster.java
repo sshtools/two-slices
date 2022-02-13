@@ -882,13 +882,13 @@ public class NotificationCenterToaster extends AbstractToaster {
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		final ID notification = Foundation.invoke(Foundation.getObjcClass("NSUserNotification"), "new");
+		var notification = Foundation.invoke(Foundation.getObjcClass("NSUserNotification"), "new");
 		Foundation.invoke(notification, "setTitle:",
 				Foundation.nsString(StringUtil.stripHtml(builder.title(), true).replace("%", "%%")));
 		Foundation.invoke(notification, "setInformativeText:",
 				Foundation.nsString(StringUtil.stripHtml(builder.content(), true).replace("%", "%%")));
 		
-		List<ToastAction> actions = builder.actions();
+		var actions = builder.actions();
 		if(actions.size() > 0) {
 			Foundation.invoke(notification, "setHasActionButton:", true);	
 			if(actions.size() > 1) {
@@ -903,12 +903,11 @@ public class NotificationCenterToaster extends AbstractToaster {
 			}
 		}
 		
-		final ID center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
+		var center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
 				"defaultUserNotificationCenter");
 		Foundation.invoke(center, "deliverNotification:", notification);
 		
 		return new Slice() {
-			
 			@Override
 			public void close() throws IOException {
 				Foundation.invoke(notification, "removeDeliveredNotification:", notification);	

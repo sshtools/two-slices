@@ -45,8 +45,8 @@ public class Toast {
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
 	public static Slice toast(ToastType type, String title, String content, ToastActionListener... listeners) {
-		ToastBuilder builder = builder().type(type).title(title).content(content);
-		for(ToastActionListener l : listeners) {
+		var builder = builder().type(type).title(title).content(content);
+		for(var l : listeners) {
 			builder.action(l.toString(), () -> l.action());
 		}
 		return builder.toast();
@@ -66,8 +66,8 @@ public class Toast {
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
 	public static Slice toast(ToastType type, String icon, String title, String content, ToastActionListener... listeners) {
-		ToastBuilder builder = builder().type(type).title(title).icon(icon).content(content);
-		for(ToastActionListener l : listeners) {
+		var builder = builder().type(type).title(title).icon(icon).content(content);
+		for(var l : listeners) {
 			builder.action(l.toString(), () -> l.action());
 		}
 		return builder.toast();

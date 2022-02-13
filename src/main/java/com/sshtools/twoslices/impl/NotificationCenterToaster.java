@@ -35,6 +35,7 @@ import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
+import com.sshtools.twoslices.Version;
 import com.sun.jna.Callback;
 import com.sun.jna.FromNativeContext;
 import com.sun.jna.Function;
@@ -853,6 +854,14 @@ public class NotificationCenterToaster extends AbstractToaster {
 	private static final Function myObjcMsgSend;
 
 	static {
+		if(!Platform.isMac())
+			throw new UnsupportedOperationException();
+		Version osVersion = new Version(System.getProperty("os.version"));
+		Version minVersion = new Version("10.8.0"); // Mountain Lion
+		if(osVersion.compareTo(minVersion) < 0) {
+			throw new UnsupportedOperationException();
+		}
+		
 		myFoundationLibrary = Native.load("Foundation", FoundationLibrary.class,
 				Collections.singletonMap("jna.encoding", "UTF8"));
 		NativeLibrary nativeLibrary = ((Library.Handler) Proxy.getInvocationHandler(myFoundationLibrary))
@@ -862,10 +871,7 @@ public class NotificationCenterToaster extends AbstractToaster {
 
 	public NotificationCenterToaster(ToasterSettings configuration) {
 		super(configuration);
-		if(!Platform.isMac())
-			throw new UnsupportedOperationException();
 		capabilities.addAll(Arrays.asList(Capability.IMAGES, Capability.ACTIONS, Capability.CLOSE));
-		// TODO check mountain lion or higher
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {

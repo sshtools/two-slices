@@ -15,6 +15,7 @@
  */
 package com.sshtools.twoslices.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +95,23 @@ public class JavaFXToaster extends AbstractToaster {
 			return new JavaFXToaster(settings);
 		}
 	}
+	
+	class JavaFXSlice implements Slice {
+		
+		private String title;
+		private String content;
+
+		JavaFXSlice(String title, String content) {
+			this.title = title;
+			this.content = content;
+		}
+		
+		@Override
+		public void close() throws IOException {
+			findPopup(title, content).hide();
+		}
+		
+	}
 
 	private Stage hidden;
 
@@ -109,41 +127,43 @@ public class JavaFXToaster extends AbstractToaster {
 		} catch (ClassNotFoundException cnfe) {
 			throw new UnsupportedOperationException();
 		}
-	}
 
-	@Override
-	public Slice toast(ToastBuilder builder) {
-		maybeRunLater(() -> {
-			Stage.getWindows().addListener(new ListChangeListener<Window>() {
-				@SuppressWarnings("unchecked")
-				@Override
-				public void onChanged(Change<? extends Window> c) {
-					while (c.next()) {
-						for (Window w : c.getAddedSubList()) {
-							if (w instanceof Popup) {
-								Popup popup = (Popup) w;
-								Scene s = popup.getScene();
-								for (Node node : s.getRoot().getChildrenUnmodifiable()) {
-									if (node.getClass().getTypeName().startsWith(
-											"org.controlsfx.control.Notifications$NotificationPopupHandler")) {
-										String css = (String) configuration.getProperties().get(STYLESHEET);
-										if (css != null)
-											s.getStylesheets().add(css);
-										List<String> csss = (List<String>) configuration.getProperties()
-												.get(STYLESHEETS);
-										if (csss != null)
-											s.getStylesheets().addAll(csss);
-										String style = (String) configuration.getProperties().get(STYLE);
-										if (style != null)
-											s.getRoot().setStyle(style);
-										return;
-									}
+		Stage.getWindows().addListener(new ListChangeListener<Window>() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void onChanged(Change<? extends Window> c) {
+				while (c.next()) {
+					for (Window w : c.getAddedSubList()) {
+						if (w instanceof Popup) {
+							Popup popup = (Popup) w;
+							Scene s = popup.getScene();
+							for (Node node : s.getRoot().getChildrenUnmodifiable()) {
+								if (node.getClass().getTypeName().startsWith(
+										"org.controlsfx.control.Notifications$NotificationPopupHandler")) {
+									String css = (String) configuration.getProperties().get(STYLESHEET);
+									if (css != null)
+										s.getStylesheets().add(css);
+									List<String> csss = (List<String>) configuration.getProperties()
+											.get(STYLESHEETS);
+									if (csss != null)
+										s.getStylesheets().addAll(csss);
+									String style = (String) configuration.getProperties().get(STYLE);
+									if (style != null)
+										s.getRoot().setStyle(style);
+									return;
 								}
 							}
 						}
 					}
 				}
-			});
+			}
+		});
+	}
+
+	@Override
+	public Slice toast(ToastBuilder builder) {
+		var slice = new JavaFXSlice(builder.title(), builder.content());
+		maybeRunLater(() -> {
 			var n = Notifications.create();
 			var type = builder.type();
 			n.hideAfter(builder.timeout() == 0 ? Duration.INDEFINITE
@@ -158,21 +178,9 @@ public class JavaFXToaster extends AbstractToaster {
 				Action action = new Action(a.displayName(), (e) -> {
 					if (a.listener() != null)
 						a.listener().action();
-					for (Window w : Stage.getWindows()) {
-						if (w instanceof Popup) {
-							Popup popup = (Popup) w;
-							Scene s = popup.getScene();
-							for (Node node : s.getRoot().getChildrenUnmodifiable()) {
-								if (node.getClass().getTypeName()
-										.startsWith("org.controlsfx.control.Notifications$NotificationPopupHandler")) {
-									popup.hide();
-									if (builder.closed() != null)
-										builder.closed().action();
-									return;
-								}
-							}
-						}
-					}
+					findPopup(builder.title(), builder.content()).hide();
+					if (builder.closed() != null)
+						builder.closed().action();
 				});
 				as.add(action);
 			}
@@ -215,7 +223,23 @@ public class JavaFXToaster extends AbstractToaster {
 				showNotification(type, n);
 			}
 		});
-		return Slice.defaultSlice();
+		return slice;
+	}
+	
+	private Popup findPopup(String title, String content) {
+		for (Window w : Stage.getWindows()) {
+			if (w instanceof Popup) {
+				Popup popup = (Popup) w;
+				Scene s = popup.getScene();
+				for (Node node : s.getRoot().getChildrenUnmodifiable()) {
+					if (node.getClass().getTypeName()
+							.startsWith("org.controlsfx.control.Notifications$NotificationPopupHandler")) {
+						return popup;
+					}
+				}
+			}
+		}
+		throw new IllegalStateException("No popup windows.");
 	}
 
 	private Pos calcPos() {

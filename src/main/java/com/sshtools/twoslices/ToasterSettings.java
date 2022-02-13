@@ -30,16 +30,15 @@ import com.sshtools.twoslices.impl.SWTToaster;
  * @see ToasterFactory#setSettings(ToasterSettings)
  */
 public class ToasterSettings {
-	
 
 	public enum SystemTrayIconMode {
 		HIDDEN, SHOW_TOAST_TYPE_WHEN_ACTIVE, SHOW_DEFAULT_WHEN_ACTIVE, SHOW_DEFAULT_ALWAYS
 	}
-	
+
 	public enum Position {
 		TL, T, TR, CL, C, CR, BL, B, BR
 	}
-	
+
 	private String appName = "TwoSlices";
 	private Object parent;
 	private int timeout = 10;
@@ -47,6 +46,7 @@ public class ToasterSettings {
 	private SystemTrayIconMode systemTrayIconMode = SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE;
 	private Position position;
 	private Map<String, Object> properties = new HashMap<>();
+	private String preferredToasterClassName = System.getProperty("twoslices.preferred");
 
 	public ToasterSettings() {
 		try {
@@ -56,7 +56,38 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Get the generic properties. These are used to pass toaster specific configuration.
+	 * Get the class name of the preferred toaster (when there are multiple
+	 * available). Ordinarily, the order is set by two slices itself, preferring the
+	 * most native implementation, followed by the best looking generic
+	 * implementation (all depending on what libraries are available). Each
+	 * implementation is tried to see if it works at all, the first one that does is
+	 * used. This property can override that, i.e. if the specified toaster has all of its dependencies
+	 * available, initialises OK, then it is used. Otherwise the first available is used.
+	 * 
+	 * @return preferred toaster
+	 */
+	public String getPreferredToasterClassName() {
+		return preferredToasterClassName;
+	}
+
+	/**
+	 * Set the class name of the preferred toaster (when there are multiple
+	 * available). Ordinarily, the order is set by two slices itself, preferring the
+	 * most native implementation, followed by the best looking generic
+	 * implementation (all depending on what libraries are available). Each
+	 * implementation is tried to see if it works at all, the first one that does is
+	 * used. This property can override that, i.e. if the specified toaster has all of its dependencies
+	 * available, initialises OK, then it is used. Otherwise the first available is used.
+	 * 
+	 * @param preferredToasterClassName preferred toaster
+	 */
+	public void setPreferredToasterClassName(String preferredToasterClassName) {
+		this.preferredToasterClassName = preferredToasterClassName;
+	}
+
+	/**
+	 * Get the generic properties. These are used to pass toaster specific
+	 * configuration.
 	 * 
 	 * @return properties
 	 */
@@ -65,8 +96,8 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Get the application name hint. This may be used by some notifiers to
-	 * display the sending applications name.
+	 * Get the application name hint. This may be used by some notifiers to display
+	 * the sending applications name.
 	 * 
 	 * @return name
 	 * @see #setAppName(String)
@@ -77,9 +108,9 @@ public class ToasterSettings {
 
 	/**
 	 * If you are using a specific {@link Toaster} implementation, such as
-	 * {@link SWTToaster}, then you can provide a 'parent' that the notifier can
-	 * use for positioning and other inheritable properties. In the case of SWT,
-	 * this would be a {@link TrayItem} which the message can attach to.
+	 * {@link SWTToaster}, then you can provide a 'parent' that the notifier can use
+	 * for positioning and other inheritable properties. In the case of SWT, this
+	 * would be a {@link TrayItem} which the message can attach to.
 	 * 
 	 * @return parent
 	 * @see #setParent(Object)
@@ -100,8 +131,8 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Set the application name hint. This may be used by some notifiers to
-	 * display the sending applications name.
+	 * Set the application name hint. This may be used by some notifiers to display
+	 * the sending applications name.
 	 * 
 	 * @param appName application name hint
 	 * @return this instance for chaining
@@ -114,9 +145,9 @@ public class ToasterSettings {
 
 	/**
 	 * If you are using a specific {@link Toaster} implementation, such as
-	 * {@link SWTToaster}, then you can provide a 'parent' that the notifier can
-	 * use for positioning and other inheritable properties. In the case of SWT,
-	 * this would be a {@link TrayItem} which the message can attach to.
+	 * {@link SWTToaster}, then you can provide a 'parent' that the notifier can use
+	 * for positioning and other inheritable properties. In the case of SWT, this
+	 * would be a {@link TrayItem} which the message can attach to.
 	 * 
 	 * @param parent parent
 	 * @return this instance for chaining
@@ -141,10 +172,10 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Set the default image that might be displayed depending on {@link #getSystemTrayIconMode()}.
-	 * Some implementations require an item on the <i>System tray</i> to be
-	 * able to show messages, and may even require the icon is permanently
-	 * visible for proper operation (such as SWT).
+	 * Set the default image that might be displayed depending on
+	 * {@link #getSystemTrayIconMode()}. Some implementations require an item on the
+	 * <i>System tray</i> to be able to show messages, and may even require the icon
+	 * is permanently visible for proper operation (such as SWT).
 	 * 
 	 * @param defaultImage the location of the default image.
 	 * @return this instance for chaining
@@ -156,10 +187,10 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Get the default image that might be displayed depending on the .
-	 * Some implementations require an item on the <i>System tray</i> to be
-	 * able to show messages, and may even require the icon is permanently
-	 * visible for proper operation (such as SWT). 
+	 * Get the default image that might be displayed depending on the . Some
+	 * implementations require an item on the <i>System tray</i> to be able to show
+	 * messages, and may even require the icon is permanently visible for proper
+	 * operation (such as SWT).
 	 * 
 	 * @return the location of the default image.
 	 * @see #setDefaultImage(URL)
@@ -181,7 +212,6 @@ public class ToasterSettings {
 		return systemTrayIconMode;
 	}
 
-
 	/**
 	 * Set the hint as to how to treat the system tray icon (if one is needed for
 	 * the platform in use.)
@@ -195,8 +225,8 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Get the position hint (if supported). Will be automatically determined
-	 * when <code>null</code> (the default).
+	 * Get the position hint (if supported). Will be automatically determined when
+	 * <code>null</code> (the default).
 	 * 
 	 * @return position hint
 	 */
@@ -205,14 +235,13 @@ public class ToasterSettings {
 	}
 
 	/**
-	 * Set the position hint (if supported). Will be automatically determined
-	 * when <code>null</code> (the default).
+	 * Set the position hint (if supported). Will be automatically determined when
+	 * <code>null</code> (the default).
 	 * 
 	 * @param position position hint
 	 */
 	public void setPosition(Position position) {
 		this.position = position;
 	}
-	
-	
+
 }

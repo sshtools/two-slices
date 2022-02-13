@@ -48,14 +48,29 @@ public abstract class ToasterFactory {
 		public Toaster toaster() {
 			synchronized (lock) {
 				if (instance == null) {
-					for (ToasterService toaster : ServiceLoader.load(ToasterService.class)) {
+					var preferred = getSettings().getPreferredToasterClassName();
+					Toaster first = null;
+					for (var toaster : ServiceLoader.load(ToasterService.class)) {
 						try {
-							return instance = toaster.create(settings);
-						}
-						catch(Exception e) {
+							var t = toaster.create(settings);
+							if (first == null) {
+								first = t;
+							}
+
+							if (preferred == null) {
+								instance = t;
+								break;
+							} else if (preferred.equals(t.getClass().getName())) {
+								instance = t;
+								break;
+							}
+						} catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
 						}
 					}
-					throw new UnsupportedOperationException("No toasters available.");
+					if (instance == null)
+						instance = first;
+					if (instance == null)
+						throw new UnsupportedOperationException("No toasters available.");
 				}
 				return instance;
 			}

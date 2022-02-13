@@ -78,10 +78,17 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
-			<artifactId>dbus-java</artifactId>
-			<version>3.3.0</version>
+			<artifactId>dbus-java-core</artifactId>
+			<version>4.0.0</version>
 			<optional>true</optional>
 		</dependency>
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java-transport-native-unixsocket</artifactId>
+            <version>4.0.0</version>
+            <optional>true</optional>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>

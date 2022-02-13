@@ -20,6 +20,7 @@ Additionally on all platforms, if no notifier implementation can be found, the l
 
 Windows support is currently provided in the following order :-
 
+ * JavaFX. If JavaFX and ControlsFX is on the CLASSPATH, [ControlsFX](http://controlsfx.com) based notification popups will be used.
  * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used. 
 
@@ -29,8 +30,10 @@ Windows support is currently provided in the following order :-
 
 Mac OS X support will be provided in the following order :-
 
+ * If native notification centre support is available (Mountain Lion and above), it will be used first.
  * Growl (via AppleScript). If Growl via AppleScript is available, it will be used.
  * If there is no growl, but osascript is an available command, the default Notification Centre will be used
+ * JavaFX. If JavaFX and ControlsFX is on the CLASSPATH, [ControlsFX](http://controlsfx.com) based notification 
  * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used.    
  
@@ -40,7 +43,9 @@ Mac OS X support will be provided in the following order :-
 
 Linux support will be provided in the following order :-
 
+ * If `dbus-java` is available, native DBus notifications will be used.
  * notify-send. If this is an available command, the default desktop notifications will be used
+ * JavaFX. If JavaFX and ControlsFX is on the CLASSPATH, [ControlsFX](http://controlsfx.com) based notification 
  * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used.
 
@@ -75,7 +80,7 @@ build system you use. For example, for Maven itself :-
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>two-slices</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 ```
@@ -94,6 +99,46 @@ You can pass in the full path to an icon too (requires support for this in selec
 
 ```java
 Toast.toast(ToastType.INFO, "/usr/share/pixmaps/mypic.png", "Boo!", "See my image?");
+```
+
+## Using The Builder
+
+An alternative way to build more complex messages is using `ToastBuilder`. 
+
+```java
+var builder = Toast.builder();
+builder.title("My Title");
+builder.content("Some content");
+
+builder.toast();
+```
+
+### Closing
+
+You can prematurely close messages if the toaster implementation supports it.
+
+```java
+var builder = Toast.builder();
+builder.title("My Title");
+builder.content("Some content");
+var slice = builder.toast();
+
+// ...
+
+slice.close();
+
+```
+
+If you want to be notified when a message is closed, e.g. dismissed by the user. Set a listener on the builder.
+
+```java
+var builder = Toast.builder();
+builder.content("Some content");
+builder.closed(() -> {
+    System.out.println("Message closed.");
+});
+builder.toast();
+
 ```
 
 ## Settings

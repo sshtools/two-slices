@@ -31,7 +31,6 @@ import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
-import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
@@ -888,20 +887,20 @@ public class NotificationCenterToaster extends AbstractToaster {
 		Foundation.invoke(notification, "setInformativeText:",
 				Foundation.nsString(StringUtil.stripHtml(builder.content(), true).replace("%", "%%")));
 		
-		var actions = builder.actions();
-		if(actions.size() > 0) {
-			Foundation.invoke(notification, "setHasActionButton:", true);	
-			if(actions.size() > 1) {
-				Foundation.invoke(notification, "setActionButtonTitle:",
-						Foundation.nsString(actions.get(1).displayName()));
-				Foundation.invoke(notification, "setOtherButtonTitle:",
-						Foundation.nsString(actions.get(0).displayName()));
-			}
-			else {
-				Foundation.invoke(notification, "setActionButtonTitle:",
-						Foundation.nsString(actions.get(0).displayName()));	
-			}
-		}
+//		var actions = builder.actions();
+//		if(actions.size() > 0) {
+//			Foundation.invoke(notification, "setHasActionButton:", true);	
+//			if(actions.size() > 1) {
+//				Foundation.invoke(notification, "setActionButtonTitle:",
+//						Foundation.nsString(actions.get(1).displayName()));
+//				Foundation.invoke(notification, "setOtherButtonTitle:",
+//						Foundation.nsString(actions.get(0).displayName()));
+//			}
+//			else {
+//				Foundation.invoke(notification, "setActionButtonTitle:",
+//						Foundation.nsString(actions.get(0).displayName()));	
+//			}
+//		}
 		
 		var center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
 				"defaultUserNotificationCenter");

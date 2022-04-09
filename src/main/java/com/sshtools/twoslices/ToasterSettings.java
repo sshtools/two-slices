@@ -28,7 +28,7 @@ import java.util.Map;
 public class ToasterSettings {
 
 	public enum SystemTrayIconMode {
-		HIDDEN, SHOW_TOAST_TYPE_WHEN_ACTIVE, SHOW_DEFAULT_WHEN_ACTIVE, SHOW_DEFAULT_ALWAYS
+		HIDDEN, ORIGINAL, SHOW_TOAST_TYPE_WHEN_ACTIVE, SHOW_DEFAULT_WHEN_ACTIVE, SHOW_DEFAULT_ALWAYS
 	}
 
 	public enum Position {
@@ -104,7 +104,7 @@ public class ToasterSettings {
 
 	/**
 	 * If you are using a specific {@link Toaster} implementation, such as
-	 * {@link SWTToaster}, then you can provide a 'parent' that the notifier can use
+	 * {@link BasicSWTToaster}, then you can provide a 'parent' that the notifier can use
 	 * for positioning and other inheritable properties. In the case of SWT, this
 	 * would be a {@link TrayItem} which the message can attach to.
 	 * 
@@ -141,7 +141,7 @@ public class ToasterSettings {
 
 	/**
 	 * If you are using a specific {@link Toaster} implementation, such as
-	 * {@link SWTToaster}, then you can provide a 'parent' that the notifier can use
+	 * {@link BasicSWTToaster}, then you can provide a 'parent' that the notifier can use
 	 * for positioning and other inheritable properties. In the case of SWT, this
 	 * would be a {@link TrayItem} which the message can attach to.
 	 * 

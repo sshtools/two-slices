@@ -40,6 +40,10 @@ import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.ToasterSettings;
 
+import uk.co.bithatch.nativeimage.annotations.Proxy;
+import uk.co.bithatch.nativeimage.annotations.Reflectable;
+import uk.co.bithatch.nativeimage.annotations.TypeReflect;
+
 /**
  * Implementation for linux that uses the DBUS notification service.
  */
@@ -53,6 +57,9 @@ public class DBUSNotifyToaster extends AbstractToaster {
 	}
 	
 	@DBusInterfaceName("org.freedesktop.Notifications")
+	@Proxy
+	@Reflectable
+	@TypeReflect(methods = true, classes = true)
 	public interface Notifications extends DBusInterface {
 
 		void CloseNotification(int id);
@@ -64,6 +71,8 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		UInt32 Notify(String appName, UInt32 replacesId, String appIcon, String summary, String body,
 				List<String> actions, Map<String, Variant<?>> hints, int expireTimeout);
 
+		@Reflectable
+		@TypeReflect(methods = true, constructors = true)
 		public class ActionInvoked extends DBusSignal {
 
 			private UInt32 id;
@@ -77,6 +86,8 @@ public class DBUSNotifyToaster extends AbstractToaster {
 
 		}
 
+		@Reflectable
+		@TypeReflect(methods = true, constructors = true)
 		public class NotificationClosed extends DBusSignal {
 
 			private UInt32 id;

@@ -18,16 +18,16 @@ package com.sshtools.twoslices;
 import org.eclipse.swt.widgets.Display;
 import org.junit.Test;
 
-import com.sshtools.twoslices.impl.SWTToaster;
+import com.sshtools.twoslices.impl.BasicSWTToaster;
 
-public class SWTToasterTest extends AbstractToasterTest {
+public class BasicSWTToasterTest extends AbstractToasterTest {
 	@Test
 	public void testSWT() {
 		var display = Display.getDefault();
 		new Thread() {
 			public void run() {
 				try {
-					testToaster(new SWTToaster(new ToasterSettings()));
+					testToaster(new BasicSWTToaster(new ToasterSettings()));
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {

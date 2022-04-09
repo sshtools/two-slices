@@ -16,10 +16,12 @@
 import com.sshtools.twoslices.ToasterService;
 
 module com.sshtools.twoslices {
+	requires uk.co.bithatch.nativeimage.annotations;
+	
 	requires static java.desktop;
 	requires static java.scripting;
 	requires static org.freedesktop.dbus;
-	requires static org.eclipse.swt.gtk.linux.x86_64;
+	requires static transitive org.eclipse.swt.gtk.linux.x86_64;
 
 	/*
 	 * TODO This is going to be tricky. SWT Maven artifact naming just is not
@@ -46,6 +48,7 @@ module com.sshtools.twoslices {
 			com.sshtools.twoslices.impl.NotifyToaster.Service, com.sshtools.twoslices.impl.GrowlToaster.Service,
 			com.sshtools.twoslices.impl.NotificationCenterToaster.Service,
 			com.sshtools.twoslices.impl.OsXToaster.Service, com.sshtools.twoslices.impl.JavaFXToaster.Service,
-			com.sshtools.twoslices.impl.SWTToaster.Service, com.sshtools.twoslices.impl.AWTToaster.Service,
+			com.sshtools.twoslices.impl.SWTToaster.Service, 
+			com.sshtools.twoslices.impl.BasicSWTToaster.Service, com.sshtools.twoslices.impl.AWTToaster.Service,
 			com.sshtools.twoslices.impl.SysOutToaster.Service;
 }

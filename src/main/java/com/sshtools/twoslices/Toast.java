@@ -29,7 +29,25 @@ public class Toast {
 	 * @throws ToasterException if there is a serious unrecoverable error.
 	 */
 	public static ToastBuilder builder() {
-		return new ToastBuilder().toaster(ToasterFactory.getFactory().toaster());
+		return new ToastBuilder();
+	}
+	
+	/**
+	 * Display an information message.
+	 * 
+	 * @param content content of message
+	 * @param listeners optional array of listeners that will be invoked if the
+	 *            toast is clicked. If listeners are not supported, the listeners
+	 *            will be silently ignored.
+	 * @return handle to message
+	 * @throws ToasterException if there is a serious unrecoverable error.
+	 */
+	public static Slice toast(String content, ToastActionListener... listeners) {
+		var builder = builder().content(content);
+		for(var l : listeners) {
+			builder.action(l.toString(), () -> l.action());
+		}
+		return builder.toast();
 	}
 	
 	/**

@@ -458,8 +458,9 @@ public class ToastBuilder {
 	 * builder.
 	 */
 	public Slice toast() {
-		if(toaster == null)
-			throw new IllegalStateException("Toaster has not been set.");
+		if(toaster == null) {
+			toaster = ToasterFactory.getFactory().toaster();
+		}
 		return toaster.toast(this);
 	}
 }

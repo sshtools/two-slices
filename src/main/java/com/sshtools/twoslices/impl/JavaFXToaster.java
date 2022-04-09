@@ -17,6 +17,7 @@ package com.sshtools.twoslices.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.controlsfx.control.Notifications;
@@ -24,9 +25,9 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.tools.Utils;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
-import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
@@ -122,6 +123,7 @@ public class JavaFXToaster extends AbstractToaster {
 	 */
 	public JavaFXToaster(ToasterSettings configuration) {
 		super(configuration);
+		capabilities.addAll(Arrays.asList(Capability.ACTIONS, Capability.CLOSE, Capability.IMAGES));
 		try {
 			Class.forName("org.controlsfx.control.Notifications");
 		} catch (ClassNotFoundException cnfe) {

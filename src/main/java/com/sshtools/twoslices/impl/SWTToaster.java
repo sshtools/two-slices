@@ -17,16 +17,26 @@ package com.sshtools.twoslices.impl;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.ToolTip;
-import org.eclipse.swt.widgets.TrayItem;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.Capability;
@@ -36,80 +46,52 @@ import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
-import com.sshtools.twoslices.ToasterSettings.SystemTrayIconMode;
+import com.sshtools.twoslices.ToasterSettings.Position;
 
 /**
- * Fall-back notifier for when no native notifier can be found or used and the
- * SWT toolkit is available.
- * <p>
- * This implementation supports {@link ToasterSettings#getParent()} and
- * {@link ToasterSettings#setParent(Object)}. The parent object must be an
- * instance of {@link TrayItem}. When provided, this tray item will be used as
- * the parent of the balloon messages.
+ * A specially implemented fall-back notifier for when no native notifier can be
+ * found or used and the SWT toolkit is available. It creates and manages it's
+ * own popup windows.
  */
 public class SWTToaster extends AbstractToaster {
-	
+
+	/**
+	 * Key for {@link ToasterSettings#getProperties()} hint for an offset between
+	 * the edge of the screen (as decided by the {@Position}. Should be an
+	 * {@link Integer}.
+	 */
+	public final static String OFFSET = "offset";
+
+	/**
+	 * Key for {@link ToasterSettings#getProperties()} hint for the maximum size of
+	 * image content. Should be an {@link Integer}. Any size lower than this will be
+	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}.
+	 */
+	public final static String IMAGE_SIZE = "imageSize";
+
+	/**
+	 * Key for {@link ToasterSettings#getProperties()} hint to use animated window
+	 * positioning. This is experimental, as there are some issues.
+	 */
+	public final static String ANIMATED = "animated";
+
+	/**
+	 * Key for {@link ToasterSettings#getProperties()} hint to signal which monitor
+	 * to use. Should be an {@link Integer}. Use -1 to indicate the primary monitor
+	 * (the default)
+	 */
+	public final static String MONITOR = "monitor";
+
 	public static class Service implements ToasterService {
 		@Override
 		public Toaster create(ToasterSettings settings) {
 			return new SWTToaster(settings);
 		}
 	}
-	
-	/**
-	 * On Linux Cinnamon (probably others?), if we don't wait for a short while
-	 * after the tray item has been added for it to actually be shown on the
-	 * desktop, the position of the balloon will be incorrect, so we have to
-	 * wait for at least this amount of until the first notification message can
-	 * be shown. Subsequent notifications will not need to do this. At no point
-	 * though will the calling thread be held up, the message will just take a
-	 * short while to appear.
-	 */
-	final static int STARTUP_WAIT = 3000;
-	private TrayItem item;
-	private Object lock = new Object();
-	private boolean ready;
-	private Shell shell;
-	private long started;
-	private Thread timer;
-	private ToolTip tip;
-	private Image lastImage;
-	private int lastSwtCode;
-	
-	class SWTSlice implements Slice {
-		
-		private Display display;
-		private boolean closed = false;
 
-		@Override
-		public void close() throws IOException {
-			synchronized (lock) {
-				if(closed)
-					return;
-				closed = true;
-				var fTip = tip;
-				display.asyncExec(() -> {
-					if (fTip != null)
-						fTip.dispose();
-					if (configuration.getParent() == null) {
-						try {
-							item.setImage(getPlatformImage(getTypeImage(null)));
-						} catch (IOException e) {
-							item.setVisible(false);
-							ready = false;
-						}
-					} else {
-						if (lastImage != null) {
-							item.setImage(lastImage);
-							lastImage = null;
-						}
-					}
-				});
-				tip = null;
-			}
-		}
-		
-	}
+	private Display display;
+	private Shell hidden;
+	private PopupWindow slice;
 
 	/**
 	 * Constructor
@@ -119,175 +101,406 @@ public class SWTToaster extends AbstractToaster {
 	public SWTToaster(ToasterSettings configuration) {
 		super(configuration);
 		try {
-			Class.forName("org.eclipse.swt.widgets.Tray");
-			if (!hasTray())
-				throw new UnsupportedOperationException();
-			started = System.currentTimeMillis();
-			capabilities.addAll(Arrays.asList(Capability.IMAGES, Capability.CLOSE));
-			init();
-		} catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
-			throw new UnsupportedOperationException();
+			display = Display.getDefault();
+			capabilities.addAll(
+					Arrays.asList(Capability.ACTIONS, Capability.CLOSE, Capability.DEFAULT_ACTION, Capability.IMAGES));
+		} catch (Throwable cnfe) {
+			throw new UnsupportedOperationException(getClass().getName() + " not supported.", cnfe);
 		}
 	}
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		return doToast(builder, new SWTSlice());
-	}
-
-	protected Slice doToast(ToastBuilder builder, SWTSlice slice) {
-		synchronized (lock) {
-			var display = Display.getDefault();
-			if (!ready) {
-				var now = System.currentTimeMillis();
-				if (now < started + STARTUP_WAIT) {
-					display.asyncExec(() -> display.timerExec((int) ((started + STARTUP_WAIT) - now), () -> {
-						ready = true;
-						doToast(builder, slice);
-					}));
-					return slice;
-				}
-			}
-			display.asyncExec(() -> {
-				synchronized (lock) {
-					var swtCode = typeToSWTCode(builder.type());
-					if (tip == null || swtCode != lastSwtCode) {
-						if (tip != null)
-							tip.dispose();
-						tip = new ToolTip(shell, SWT.BALLOON | swtCode);
-						lastSwtCode = swtCode;
-						tip.setAutoHide(false);
-					} else {
-						timer.interrupt();
-					}
-					doShow(builder, display, slice);
-				}
-			});
-			return slice;
-		}
-	}
-
-	private int typeToSWTCode(ToastType type) {
-		switch (type) {
-		case ERROR:
-			return SWT.ICON_ERROR;
-		case WARNING:
-			return SWT.ICON_WARNING;
-		case NONE:
-			return SWT.NONE;
-		default:
-			return SWT.ICON_INFORMATION;
-		}
-	}
-
-	protected boolean hasTray() {
-		/*
-		 * Check for the tray. This has to be done in the SWT thread. Being as
-		 * we don't know if there is a dispatch thread running, we submit a task
-		 * and wait a short while.
-		 */
-		var d = Display.getDefault();
-		try {
-			if (d == null || d.getSystemTray() == null)
-				return false;
-		} catch (SWTException e) {
-		}
-		final var result = new boolean[1];
-		final var sem = new Semaphore(1);
-		try {
-			sem.acquire();
-			try {
-				d.asyncExec(() -> {
-					result[0] = d != null && d.getSystemTray() != null;
-					sem.release();
-				});
-				sem.tryAcquire(250, TimeUnit.MILLISECONDS);
-			} finally {
-				sem.release();
-			}
-		} catch (InterruptedException ie) {
-		} catch (SWTException se) {
-		}
-		return result[0];
-	}
-
-	private void doShow(ToastBuilder builder, Display display, SWTSlice slice) {
-		slice.display = display;
-		tip.setMessage(builder.content());
-		if (configuration.getParent() != null && lastImage == null) {
-			lastImage = item.getImage();
-		}
-		var icon = builder.icon();
-		if (icon == null || icon.length() == 0)
-			try {
-				item.setImage(getPlatformImage(getTypeImage(builder.type())));
-			} catch (IOException e1) {
+		var newSlice = new PopupWindow(display, builder, configuration);
+		display.asyncExec(() -> {
+			if (hidden == null)
+				hidden = new Shell(display);
+			if (slice != null) {
 				try {
-					item.setImage(getPlatformImage(getTypeImage(null)));
-				} catch (IOException e) {
-					// Give up
-				}
-			}
-		else
-			item.setImage(getPlatformImage(new Image(display, icon)));
-		tip.setText(builder.title());
-		item.setToolTip(tip);
-		tip.setVisible(true);
-		item.setVisible(true);
-		if(timer != null) {
-			timer.interrupt();
-		}
-		timer = new Thread("SWTNotifierWait") {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep((builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout()) * 1000);
 					slice.close();
-				} catch (Exception ie) {
-				} finally {
-					slice.closed = true;
+				} catch (IOException e) {
 				}
 			}
-		};
-		timer.start();
-	}
-
-	private void init() {
-		var display = Display.getDefault();
-		display.syncExec(() -> {
-			if (configuration.getParent() != null && configuration.getParent() instanceof TrayItem) {
-				item = (TrayItem) configuration.getParent();
-			} else {
-				item = new TrayItem(display.getSystemTray(), SWT.NONE);
-			}
-			shell = new Shell(display, SWT.NONE);
+			newSlice.popup(hidden);
+			slice = newSlice;
 		});
+		return newSlice;
 	}
 
-	private Image getPlatformImage(Image image) {
-		var osname = System.getProperty("os.name");
-		int sz = 48;
-		if (osname.toLowerCase().indexOf("windows") != -1)
-			sz = 16;
-		else if (osname.toLowerCase().indexOf("linux") != -1)
-			sz = 24;
-		var data = image.getImageData();
-		data = data.scaledTo(sz, sz);
-		var img = new Image(image.getDevice(), data, data);
-		image.dispose();
-		return img;
-	}
+	public static class PopupWindow implements Slice {
 
-	private Image getTypeImage(ToastType type) throws IOException {
-		var d = Display.getDefault();
-		if (configuration.getSystemTrayIconMode() == SystemTrayIconMode.HIDDEN) {
-			return new Image(d, getClass().getResourceAsStream("/images/blank-48.gif"));
-		} else if (type == null || ((configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE
-				|| configuration.getSystemTrayIconMode() == SystemTrayIconMode.SHOW_DEFAULT_ALWAYS)
-				&& configuration.getDefaultImage() != null)) {
-			return new Image(d, configuration.getDefaultImage().openStream());
-		} else
-			return new Image(d, getClass().getResourceAsStream(
-					"/images/dialog-" + (type.equals(ToastType.NONE) ? ToastType.INFO : type).name().toLowerCase() + "-48.png"));
+		private static final int TEXT_WIDTH = 400;
+		private static final int IMAGE_SIZE = 128;
+		private static final int DEFAULT_OFFSET = 64;
+		private static final int SPACING = 8;
+		private static final int ANIMATION_TIME = 250;
+
+		private Shell shell;
+		private Label title;
+		private Label content;
+		private Label icon;
+		private ToasterSettings settings;
+		private Display display;
+		private long animStarted;
+		private Point endPosition;
+		private Point startPosition;
+		private ToastBuilder builder;
+		private Thread timerThread;
+		private Thread swtThread;
+
+		public PopupWindow(Display display, ToastBuilder builder, ToasterSettings settings) {
+			this.settings = settings;
+			this.display = display;
+			this.builder = builder;
+		}
+
+		public void popup(Shell hidden) {
+			swtThread = Thread.currentThread();
+			var defaultListener = new MouseListener() {
+				@Override
+				public void mouseUp(MouseEvent e) {
+					if (builder.defaultAction() != null && builder.defaultAction().listener() != null)
+						builder.defaultAction().listener().action();
+				}
+
+				@Override
+				public void mouseDown(MouseEvent e) {
+				}
+
+				@Override
+				public void mouseDoubleClick(MouseEvent e) {
+				}
+			};
+
+			shell = new Shell(hidden, SWT.ON_TOP);
+
+			var topRow = new Composite(shell, SWT.NONE);
+			var topLayout = new GridLayout();
+			topLayout.numColumns = 3;
+			topRow.setLayout(topLayout);
+			topRow.addMouseListener(defaultListener);
+
+			if (builder.type() != ToastType.NONE) {
+				icon = new Label(topRow, SWT.NONE);
+				var data = new GridData();
+				data.widthHint = 24;
+				data.heightHint = 24;
+				icon.setLayoutData(data);
+				Image s = getScaledImage(getTypeImage(builder.type()), 24);
+				shell.addDisposeListener((e) -> s.dispose());
+				icon.setImage(s);
+				icon.pack();
+			}
+
+			if (builder.title() != null) {
+				title = new Label(topRow, SWT.NONE);
+				var data = new GridData();
+				data.grabExcessHorizontalSpace = true;
+				data.grabExcessVerticalSpace = true;
+				title.setLayoutData(data);
+				title.setText(builder.title());
+				title.setFont(createDerivedFont(title, 16));
+				title.pack();
+			}
+
+			var close = new Button(topRow, SWT.NONE);
+			var data = new GridData();
+			data.widthHint = 24;
+			data.heightHint = 24;
+			close.setLayoutData(data);
+			close.setImage(createCloseImage(display, display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND),
+					display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND)));
+			close.addListener(SWT.Selection, e -> {
+				shell.dispose();
+			});
+
+			int imageSpace = 0;
+
+			var contentPane = new Composite(shell, SWT.NONE);
+			var contentPaneLayout = new RowLayout(SWT.HORIZONTAL);
+			contentPaneLayout.spacing = SPACING;
+			contentPane.setLayout(contentPaneLayout);
+
+			if (builder.image() != null) {
+				var imageLabel = new Label(contentPane, SWT.NONE);
+				var image = new Image(display, builder.image());
+				var maxImageSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE);
+				var imageWidth = image.getBounds().width;
+				var imageHeight = image.getBounds().height;
+				var imax = Math.max(imageWidth, imageHeight);
+				var newImageWidth = imageWidth;
+				var newImageHeight = imageHeight;
+				if (imax > maxImageSize) {
+					var r = (float) maxImageSize / (float) imax;
+					newImageWidth = (int) ((float) imageWidth * r);
+					newImageHeight = (int) ((float) imageHeight * r);
+				}
+				if (newImageWidth != imageWidth || newImageHeight != imageHeight) {
+					var newImage = getScaledImage(image, newImageWidth, newImageHeight);
+					image.dispose();
+					image = newImage;
+				}
+				imageLabel.setImage(image);
+				var imageData = new RowData(newImageWidth, newImageHeight);
+				imageLabel.setLayoutData(imageData);
+				imageLabel.pack();
+				imageSpace = newImageWidth;
+			}
+
+			int textWidth = builder.image() == null ? TEXT_WIDTH : TEXT_WIDTH - imageSpace;
+
+			if (builder.content() != null) {
+				content = new Label(contentPane, SWT.WRAP);
+				content.setText(builder.content());
+				var contentData = new RowData();
+				contentData.width = textWidth;
+				content.setLayoutData(contentData);
+				content.pack();
+				content.addListener(SWT.Modify, event -> {
+					int currentHeight = content.getSize().y;
+					int preferredHeight = content.computeSize(textWidth, SWT.DEFAULT).y;
+					if (currentHeight != preferredHeight) {
+						contentData.height = preferredHeight;
+						content.pack();
+						shell.pack();
+						shell.setLocation(to());
+					}
+				});
+				content.addMouseListener(defaultListener);
+			}
+
+			if (!builder.actions().isEmpty()) {
+				var actions = new Composite(shell, SWT.NONE);
+				var actionsRow = new RowLayout(SWT.HORIZONTAL);
+				actionsRow.spacing = SPACING;
+				actionsRow.wrap = false;
+				actionsRow.fill = true;
+				actionsRow.justify = false;
+				actions.setLayout(actionsRow);
+				for (var action : builder.actions()) {
+					var actionButton = new Button(actions, SWT.NONE);
+					actionButton.setText(action.displayName());
+					if (action.listener() == null)
+						actionButton.setGrayed(true);
+					else
+						actionButton.addListener(SWT.Selection, e -> {
+							action.listener().action();
+						});
+				}
+			}
+			shell.addMouseListener(defaultListener);
+
+			if (builder.closed() != null) {
+				shell.addDisposeListener((e) -> {
+					builder.closed().action();
+				});
+			}
+
+			var mainRow = new RowLayout(SWT.VERTICAL);
+			mainRow.wrap = false;
+			mainRow.fill = true;
+			mainRow.justify = false;
+			mainRow.spacing = SPACING;
+			mainRow.marginTop = mainRow.marginBottom = mainRow.marginLeft = mainRow.marginRight = SPACING;
+			shell.setLayout(mainRow);
+			shell.pack();
+
+			show();
+			startTimer();
+		}
+
+		private void startTimer() {
+			if (builder.timeout() == 0)
+				return;
+			timerThread = new Thread() {
+				public void run() {
+					try {
+						Thread.sleep((builder.timeout() == -1 ? settings.getTimeout() : builder.timeout()) * 1000);
+						try {
+							close();
+						} catch (IOException e) {
+						}
+					} catch (InterruptedException ie) {
+					}
+				}
+			};
+			timerThread.start();
+		}
+
+		private void show() {
+			if ((boolean) settings.getProperties().getOrDefault(SWTToaster.ANIMATED, false)) {
+				animStarted = System.currentTimeMillis();
+				startPosition = from();
+				shell.setLocation(startPosition);
+				endPosition = to();
+				animCycle();
+				shell.open();
+			} else {
+				try {
+					shell.setLocation(to());
+					shell.open();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		private void animCycle() {
+			var now = System.currentTimeMillis();
+			var time = now - animStarted;
+			var progress = Math.min(1f, (double) time / (double) ANIMATION_TIME);
+			var ax = startPosition.x + (int) (((float) endPosition.x - (float) startPosition.x) * progress);
+			var ay = startPosition.y + (int) (((float) endPosition.y - (float) startPosition.y) * progress);
+			shell.setLocation(ax, ay);
+			if (progress < 1) {
+				display.asyncExec(() -> animCycle());
+			}
+		}
+
+		private Point from() {
+			var bounds = getMonitorBounds();
+			var offset = (Integer) settings.getProperties().getOrDefault(SWTToaster.OFFSET, DEFAULT_OFFSET);
+			var sz = shell.getSize();
+			switch (calcPos()) {
+			case TR:
+				return new Point(bounds.x + bounds.width - sz.x - offset, -sz.y);
+			case TL:
+				return new Point(bounds.x + offset, -sz.y);
+			case CL:
+				return new Point(-sz.x, bounds.y + ((bounds.height - (offset * 2) - sz.y) / 2));
+			case CR:
+				return new Point(bounds.x + bounds.width + sz.x,
+						bounds.y + ((bounds.height - (offset * 2) - sz.y) / 2));
+			case C:
+			case T:
+				return new Point(bounds.x + ((bounds.width - (offset * 2) - sz.x) / 2), -sz.y);
+			case B:
+				return new Point(bounds.x + ((bounds.width - (offset * 2) - sz.x) / 2),
+						bounds.y + bounds.height + sz.y);
+			case BL:
+				return new Point(bounds.x + offset, bounds.y + bounds.height + sz.y);
+			default: // BR
+				return new Point(bounds.x + bounds.width - sz.x - offset, bounds.y + bounds.height + sz.y);
+			}
+		}
+
+		private Rectangle getMonitorBounds() {
+			var idx = (Integer) settings.getProperties().getOrDefault(SWTToaster.MONITOR, -1);
+			var mon = display.getPrimaryMonitor();
+			if (idx != -1 && idx < display.getMonitors().length) {
+				mon = display.getMonitors()[idx];
+			}
+			return mon.getBounds();
+		}
+
+		private Point to() {
+			var bounds = getMonitorBounds();
+			var offset = (Integer) settings.getProperties().getOrDefault(SWTToaster.OFFSET, DEFAULT_OFFSET);
+			var sz = shell.getSize();
+			switch (calcPos()) {
+			case TR:
+				return new Point(bounds.x + bounds.width - sz.x - offset, bounds.y + offset);
+			case TL:
+				return new Point(bounds.x + offset, bounds.y + offset);
+			case CL:
+				return new Point(bounds.x + offset, bounds.y + ((bounds.height - (offset * 2) - sz.y) / 2));
+			case C:
+				return new Point(bounds.x + ((bounds.width - (offset * 2) - sz.x) / 2),
+						bounds.y + ((bounds.height - (offset * 2) - sz.y) / 2));
+			case CR:
+				return new Point(bounds.x + bounds.width - sz.x - offset,
+						bounds.y + ((bounds.height - (offset * 2) - sz.y) / 2));
+			case T:
+				return new Point(bounds.x + ((bounds.width - (offset * 2) - sz.x) / 2), bounds.y + offset);
+			case B:
+				return new Point(bounds.x + ((bounds.width - (offset * 2) - sz.x) / 2),
+						bounds.y + bounds.height - sz.y - offset);
+			case BL:
+				return new Point(bounds.x + offset, bounds.y + bounds.height - sz.y - offset);
+			default: // BR
+				return new Point(bounds.x + bounds.width - sz.x - offset, bounds.y + bounds.height - sz.y - offset);
+			}
+		}
+
+		private Position calcPos() {
+			var pos = settings.getPosition();
+			if (pos == null) {
+				if (System.getProperty("os.name", "").indexOf("Mac OS X") > -1) {
+					return Position.TR;
+				} else
+					return Position.BR;
+			}
+			return pos;
+		}
+
+		private Image getTypeImage(ToastType type) {
+			var d = Display.getDefault();
+			switch (type) {
+			case ERROR:
+				return d.getSystemImage(SWT.ICON_ERROR);
+			case WARNING:
+				return d.getSystemImage(SWT.ICON_WARNING);
+			case INFO:
+				return d.getSystemImage(SWT.ICON_INFORMATION);
+			default:
+				return null;
+			}
+		}
+
+		static Font createDerivedFont(Label base, int newSize) {
+			FontData[] fontData = base.getFont().getFontData();
+			for (int i = 0; i < fontData.length; ++i)
+				fontData[i].setHeight(14);
+
+			final Font newFont = new Font(base.getDisplay(), fontData);
+			base.addDisposeListener((e) -> newFont.dispose());
+			return newFont;
+		}
+
+		static Image getScaledImage(Image image, int sz) {
+			return getScaledImage(image, sz, sz);
+		}
+
+		static Image getScaledImage(Image image, int sx, int sy) {
+			var data = image.getImageData();
+			data = data.scaledTo(sx, sy);
+			return new Image(image.getDevice(), data, data);
+		}
+
+		private static final Image createCloseImage(Display display, Color bg, Color fg) {
+			final int size = 11, off = 1;
+			final Image image = new Image(display, size, size);
+			final GC gc = new GC(image);
+			gc.setBackground(bg);
+			gc.fillRectangle(image.getBounds());
+			gc.setForeground(fg);
+			gc.drawLine(0 + off, 0 + off, size - 1 - off, size - 1 - off);
+			gc.drawLine(1 + off, 0 + off, size - 1 - off, size - 2 - off);
+			gc.drawLine(0 + off, 1 + off, size - 2 - off, size - 1 - off);
+			gc.drawLine(size - 1 - off, 0 + off, 0 + off, size - 1 - off);
+			gc.drawLine(size - 1 - off, 1 + off, 1 + off, size - 1 - off);
+			gc.drawLine(size - 2 - off, 0 + off, 0 + off, size - 2 - off);
+			gc.dispose();
+			return image;
+		}
+
+		@Override
+		public void close() throws IOException {
+			if (timerThread != null && timerThread != Thread.currentThread()) {
+				timerThread.interrupt();
+				timerThread = null;
+			}
+			if (swtThread == null)
+				return;
+			if (Thread.currentThread() != swtThread)
+				display.asyncExec(() -> doClose());
+			else
+				doClose();
+		}
+
+		private void doClose() {
+			if (!shell.isDisposed())
+				shell.dispose();
+		}
 	}
 }

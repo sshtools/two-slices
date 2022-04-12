@@ -117,7 +117,7 @@
         <dependency>
             <groupId>uk.co.bithatch</groupId>
             <artifactId>native-image-annotations</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -256,7 +256,7 @@ All other platforms (AWT)</description>
                         <path>
                             <groupId>uk.co.bithatch</groupId>
                             <artifactId>native-image-annotations</artifactId>
-                            <version>0.0.1-SNAPSHOT</version>
+                            <version>0.0.1</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -334,7 +334,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
-					<version>3.118.0</version>
+                    <version>3.119.0</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -351,7 +351,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.win32.win32.x86</artifactId>
-					<version>3.118.0</version>
+                    <version>3.119.0</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -368,7 +368,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-					<version>3.118.0</version>
+                    <version>3.119.0</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -385,7 +385,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-					<version>3.118.0</version>
+					<version>3.119.0</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.eclipse.platform</groupId>
@@ -400,4 +400,5 @@ All other platforms (AWT)</description>
 			</dependencies>
 		</profile>
 	</profiles>
+	
 </project>

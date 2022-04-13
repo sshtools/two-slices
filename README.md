@@ -1,18 +1,23 @@
 # two-slices
 Simple library for desktop notifications from Java on Windows, Mac OS X and Linux.
  
- * One-line of code to show a notification for most cases
- * Tries to find the best implementation available to give the best looking and most integrated experience.
+ * One-line of code to show a notification for most cases.
+ * Tries to find the best implementation available to give the best looking and most integrated experience..
  * No hard dependencies, although can be augmented with SWT to provide further options.
  * Supports NONE, INFO, ERROR and WARNING notifications types, each with it's own icon.
- * Supports custom icons
+ * Depending on provider, can supports custom icons, images and actions.
  * Can integrate with your existing system tray icon if required (SWT and Swing/AWT)
+ * Cross platform and custom JavaFX and SWT popup notifications included.
 
 ## All Platforms
 
 All platforms support Growls GNTP protocol. If you have have Growl for Mac OS X, Linux or Windows installed, running on listening on the default port, it will be used in preference to all platform specific notification systems.
 
+All platforms can use one of the Java GUI toolkit specific implementations, such as JavaFX or SWT. If these toolkit libraries are available, those will be chosen if the experience is superior to the native implementation. 
+
 Additionally on all platforms, if no notifier implementation can be found, the last resort fallback will be to display the messages on *System.out*.
+
+In all cases, you can override the chosen provider using `ToasterSettings.setPreferredToasterClassName`, see below.
 
 ## Windows
 
@@ -21,7 +26,7 @@ Additionally on all platforms, if no notifier implementation can be found, the l
 Windows support is currently provided in the following order :-
 
  * JavaFX. If JavaFX and ControlsFX is on the CLASSPATH, [ControlsFX](http://controlsfx.com) based notification popups will be used.
- * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
+ * SWT. If SWT is on the CLASSPATH, the custom SWT popup component will be used. The alternative System Tray based support and balloon tooltip can be used by explicitly requesting it.
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used. 
 
 ## Mac OS X
@@ -34,7 +39,7 @@ Mac OS X support will be provided in the following order :-
  * Growl (via AppleScript). If Growl via AppleScript is available, it will be used.
  * If there is no growl, but osascript is an available command, the default Notification Centre will be used
  * JavaFX. If JavaFX and ControlsFX is on the CLASSPATH, [ControlsFX](http://controlsfx.com) based notification 
- * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
+ * SWT. If SWT is on the CLASSPATH, the custom SWT popup component will be used. The alternative System Tray based support and balloon tooltip can be used by explicitly requesting it.
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used.    
  
 ## Linux
@@ -46,7 +51,7 @@ Linux support will be provided in the following order :-
  * If `dbus-java` is available, native DBus notifications will be used.
  * notify-send. If this is an available command, the default desktop notifications will be used
  * JavaFX. If JavaFX and ControlsFX is on the CLASSPATH, [ControlsFX](http://controlsfx.com) based notification 
- * SWT. If SWT is on the CLASSPATH, its System Tray support and balloon tooltip will be used.
+ * SWT. If SWT is on the CLASSPATH, the custom SWT popup component will be used. The alternative System Tray based support and balloon tooltip can be used by explicitly requesting it.
  * AWT. If no SWT is available, the built-in AWT System Tray support will be used.
 
 ## Configuring your project
@@ -141,6 +146,23 @@ builder.toast();
 
 ```
 
+### Actions
+
+If the toaster implementation supports them, *Actions* may be added. An action would usually be represented as a button on a notification message. 
+
+There is a special action, the `defaultAction()`. This is usually invoked when the whole notification message is clicked, or it may simply be presented as another button.
+
+Be aware different implementations have different restrictions on how many actions can be presented.
+
+```java
+	var builder = Toast.builder();
+	builder.content("Some content");
+	builder.action("Action 1", () -> System.out.println("Do Action 1"));
+	builder.action("Action 2", () -> System.out.println("Do Action 2"));
+	builder.defaultAction(System.out.println("Do Default Action"));
+	builder.toast();
+```
+
 ## Settings
 
 Some settings may be provided to alter the behaviour of the toasters. These are only hints, and specific 
@@ -200,9 +222,42 @@ Then, whenever the AWT notifier is used, the balloon message will be anchored to
 
 You can add your own notifier implementations and customise the factory if you have any special requirements.
 
+### Implementing a Toaster
+
+Implement the `Toaster` interface. An abstract implementation `AbstractToaster` is provided for your convenience and should be used where possible. By convention, all Toasters take a `ToasterSettings` in their constructor. 
+
+In the constructor of your implementation, you should test if this implementation is for the current enviroment. E.g. if you were writing an OS X specific notifier, then you would test for running on that platform and the availability of any libraries or external tools you might need. By convention, if the environment is not sufficient, an `UnsupportedOperationException` should be thrown.
+
+#### Adding The Service
+
+Before your new `Toaster` implementation can be used, you must provide a `ToasterService` implementation that creates it based on the given configuration. By convention, you place this as an inner class inside the Toaster implementation.
+
+```java
+public class MyToaster extends AbstractToaster {
+	
+	public static class Service implements ToasterService {
+		@Override
+		public Toaster create(ToasterSettings settings) {
+			return new MyToaster(settings);
+		}
+	}
+
+	public MyToaster(ToasterSettings configuration) {
+		super(configuration);
+	}
+
+	@Override
+	public Slice toast(ToastBuilder builder) {
+		// TODO
+	}
+}
+```
+
+For Java to automatically find this service, you must add it's full class name to a file in `META-INF/services/com.sshtools.twoslices.ToasterService`, and/or add it to `module-info.java` using the appropriate syntax for Java services.
+
 ### Installing Your Own Factory
 
-Simply extend `ToasterFactory`, providing you own `toaster()` method.  This will be registered as the default factory the first time you instantiate it (so make sure you do this before ever asking for toast) :-
+If you do not wish to use Java's `ServiceLoader` feature to locate toaster implementations, you can extend `ToasterFactory`, providing you own `toaster()` method.  This will be registered as the default factory the first time you instantiate it (so make sure you do this before ever asking for toast) :-
 
 ```java
 new ToasterFactory() {
@@ -212,28 +267,6 @@ new ToasterFactory() {
 	}
 };
 ```
-
-There is a Default implementation of a Toaster Factory you might consider, `ToasterFactory.DefaultToasterFactory`. For example to add support for another platform (if you actually do this please consider contributing to this project!) :-
-
-```java
-new ToasterFactory.DefaultToasterFactory() {
-	@Override
-	public Toaster toaster() {
-		if(System.getProperty("os.name").equals("SomeOtherPlatform"))
-			return new MyToaster();
-		else
-			return super.toaster(); 
-	}
-};
-```
-
-
-
-### Implementing a Toaster
-
-Implement the `Toaster` interface. An abstract implementation `AbstractToaster` is provided for your convenience and should be used where possible. By convention, all Toasters take a `ToasterSettings` in their constructor. 
-
-In the constructor of your implementation, you should test if this implementation is for the current enviroment. E.g. if you were writing an OS X specific notifier, then you would test for running on that platform and the availability of any libraries or external tools you might need. By convention, if the environment is not sufficient, an `UnsupportedOperationException` should be thrown.
 
 ### Your Custom Toast
 

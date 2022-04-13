@@ -253,7 +253,7 @@ public class MyToaster extends AbstractToaster {
 }
 ```
 
-For Java to automatically find this service, you must add it's full class name to a file in `META-INF/services/com.sshtools.twoslices.ToasterService`, and/or add it to `module-info.java` using the appropriate syntax for Java services.
+For Java to automatically find this service, you must add it's full class name, e.g. `com.mypackage.MyToaster$Service` to a file in `META-INF/services/com.sshtools.twoslices.ToasterService`, and/or add it to `module-info.java` using the appropriate syntax for Java services.
 
 ### Installing Your Own Factory
 

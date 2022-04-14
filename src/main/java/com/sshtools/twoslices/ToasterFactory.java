@@ -64,7 +64,7 @@ public abstract class ToasterFactory {
 								instance = t;
 								break;
 							}
-						} catch (Exception | ExceptionInInitializerError | NoClassDefFoundError e) {
+						} catch (Exception | ExceptionInInitializerError | NoClassDefFoundError | NoSuchMethodError e) {
 						}
 					}
 					if (instance == null)

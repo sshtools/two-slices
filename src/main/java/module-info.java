@@ -36,7 +36,7 @@ module com.sshtools.twoslices {
 
 	requires static javafx.controls;
 	requires static javafx.graphics;
-	requires static transitive org.controlsfx.controls;
+	requires static org.controlsfx.controls;
 	requires static com.sun.jna;
 
 	exports com.sshtools.twoslices;

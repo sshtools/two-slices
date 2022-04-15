@@ -18,21 +18,16 @@ package com.sshtools.twoslices;
 import org.eclipse.swt.widgets.Display;
 import org.junit.Test;
 
-import com.sshtools.twoslices.impl.BasicSWTToaster;
 import com.sshtools.twoslices.impl.SWTToaster;
 
-public class PersistentToastTest {
+public class SWTToasterTest extends AbstractToasterTest {
 	@Test
-	public void testToast() throws InterruptedException {
-		
+	public void testSWT() {
 		var display = Display.getDefault();
 		new Thread() {
 			public void run() {
 				try {
-					var b = Toast.builder();
-					//ToasterFactory.getSettings().setPreferredToasterClassName("com.sshtools.twoslices.impl.SWTToaster");
-					b.title("Test").content("Test Content").timeout(0).action("DA1", () -> System.out.println("DA1")).action("A2", () -> System.out.println("DA2")).toast();
-					Thread.sleep(1000000);	
+					testToaster(new SWTToaster(new ToasterSettings()));
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -44,6 +39,5 @@ public class PersistentToastTest {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
-		
 	}
 }

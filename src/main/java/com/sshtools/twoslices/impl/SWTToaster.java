@@ -16,6 +16,7 @@
 package com.sshtools.twoslices.impl;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 
 import org.eclipse.swt.SWT;
@@ -223,7 +224,16 @@ public class SWTToaster extends AbstractToaster {
 
 			if (builder.image() != null) {
 				var imageLabel = new Label(contentPane, SWT.NONE);
-				var image = new Image(display, builder.image());
+				Image image = null;
+				try {
+					var u = new URL(builder.image());
+					try(var in = u.openStream()) {
+						image = new Image(display, in);
+					}
+				}
+				catch(Exception e) {
+					image = new Image(display, builder.image());
+				}
 				var maxImageSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE);
 				var imageWidth = image.getBounds().width;
 				var imageHeight = image.getBounds().height;

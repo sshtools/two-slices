@@ -870,6 +870,13 @@ public class NotificationCenterToaster extends AbstractToaster {
 
 	public NotificationCenterToaster(ToasterSettings configuration) {
 		super(configuration);
+		if(!Platform.isMac())
+			throw new UnsupportedOperationException();
+Version osVersion = new Version(System.getProperty("os.version"));
+		Version minVersion = new Version("10.8.0"); // Mountain Lion
+		if(osVersion.compareTo(minVersion) < 0) {
+			throw new UnsupportedOperationException();
+		}
 		capabilities.addAll(Arrays.asList(Capability.IMAGES, Capability.ACTIONS, Capability.CLOSE));
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -883,26 +890,22 @@ public class NotificationCenterToaster extends AbstractToaster {
 	public Slice toast(ToastBuilder builder) {
 		var notification = Foundation.invoke(Foundation.getObjcClass("NSUserNotification"), "new");
 		Foundation.invoke(notification, "setTitle:",
-				Foundation.nsString(StringUtil.stripHtml(builder.title(), true).replace("%", "%%")));
+				Foundation.nsString(StringUtil.stripHtml(builder.type().name() + "." + builder.title(), true).replace("%", "%%")));
 		Foundation.invoke(notification, "setInformativeText:",
 				Foundation.nsString(StringUtil.stripHtml(builder.content(), true).replace("%", "%%")));
 		
-//		var actions = builder.actions();
-//		if(actions.size() > 0) {
-//			Foundation.invoke(notification, "setHasActionButton:", true);	
-//			if(actions.size() > 1) {
-//				Foundation.invoke(notification, "setActionButtonTitle:",
-//						Foundation.nsString(actions.get(1).displayName()));
-//				Foundation.invoke(notification, "setOtherButtonTitle:",
-//						Foundation.nsString(actions.get(0).displayName()));
-//			}
-//			else {
-//				Foundation.invoke(notification, "setActionButtonTitle:",
-//						Foundation.nsString(actions.get(0).displayName()));	
-//			}
-//		}
+		var actions = builder.actions();
+		if(actions.size() > 0) {
+			Foundation.invoke(notification, "setHasActionButton:", true);	
+			Foundation.invoke(notification, "setActionButtonTitle:",
+					Foundation.nsString(actions.get(0).displayName()));	
+			if(actions.size() > 1) {
+				Foundation.invoke(notification, "setOtherButtonTitle:",
+						Foundation.nsString(actions.get(1).displayName()));
+			}
+		}
 		
-		var center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
+		final ID center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
 				"defaultUserNotificationCenter");
 		Foundation.invoke(center, "deliverNotification:", notification);
 		

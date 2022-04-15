@@ -23,9 +23,7 @@
 	on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
 	express or implied. See the License for the specific language governing permissions 
 	and limitations under the License. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sshtools</groupId>
 	<artifactId>two-slices</artifactId>
@@ -82,13 +80,6 @@
 			<version>4.0.0</version>
 			<optional>true</optional>
 		</dependency>
-        <dependency>
-            <groupId>com.github.hypfvieh</groupId>
-            <artifactId>dbus-java-transport-native-unixsocket</artifactId>
-            <version>4.0.0</version>
-            <optional>true</optional>
-            <scope>test</scope>
-        </dependency>
 		<dependency>
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>
@@ -106,7 +97,7 @@
 			<artifactId>testfx-junit</artifactId>
 			<version>4.0.15-alpha</version>
 			<scope>test</scope>
-            <optional>true</optional>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
@@ -114,12 +105,12 @@
 			<version>5.10.0</version>
 			<optional>true</optional>
 		</dependency>
-        <dependency>
-            <groupId>uk.co.bithatch</groupId>
-            <artifactId>native-image-annotations</artifactId>
-            <version>0.0.1</version>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>uk.co.bithatch</groupId>
+			<artifactId>native-image-annotations</artifactId>
+			<version>0.0.1</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- <dependency> <groupId>org.eclipse.platform</groupId> <artifactId>org.eclipse.swt</artifactId> 
 			<version>3.115.0</version> <exclusions> <exclusion> <groupId>org.eclipse.platform</groupId> 
@@ -225,6 +216,46 @@ All other platforms (AWT)</description>
 			</plugins>
 		</pluginManagement>
 		<plugins>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/main/another-src</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>package-swt-linux-x86_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>linux-64</classifier>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -247,24 +278,55 @@ All other platforms (AWT)</description>
 						</goals>
 					</execution>
 				</executions>
-			</plugin> 
+			</plugin>
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>uk.co.bithatch</groupId>
-                            <artifactId>native-image-annotations</artifactId>
-                            <version>0.0.1</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>uk.co.bithatch</groupId>
+							<artifactId>native-image-annotations</artifactId>
+							<version>0.0.1</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
 		<profile>
+			<id>pre-jdk-16-unix-sockets</id>
+			<activation>
+				<jdk>[,16)</jdk>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>com.github.hypfvieh</groupId>
+					<artifactId>dbus-java-transport-jnr-unixsocket</artifactId>
+					<version>4.0.0</version>
+					<optional>true</optional>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>post-jdk-16-unix-sockets</id>
+			<activation>
+				<jdk>[16,)</jdk>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>com.github.hypfvieh</groupId>
+					<artifactId>dbus-java-transport-native-unixsocket</artifactId>
+					<version>4.0.0</version>
+					<optional>true</optional>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>modern-javadoc</id>
 			<activation>
 				<jdk>[9,)</jdk>
 			</activation>
@@ -334,7 +396,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
-                    <version>3.119.0</version>
+					<version>3.119.0</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -351,7 +413,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.win32.win32.x86</artifactId>
-                    <version>3.119.0</version>
+					<version>3.119.0</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -368,7 +430,7 @@ All other platforms (AWT)</description>
 					<optional>true</optional>
 					<groupId>org.eclipse.platform</groupId>
 					<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-                    <version>3.119.0</version>
+					<version>3.119.0</version>
 				</dependency>
 			</dependencies>
 		</profile>
@@ -400,5 +462,5 @@ All other platforms (AWT)</description>
 			</dependencies>
 		</profile>
 	</profiles>
-	
+
 </project>

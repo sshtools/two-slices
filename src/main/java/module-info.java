@@ -44,11 +44,15 @@ module com.sshtools.twoslices {
 	uses ToasterService;
 
 	provides ToasterService
-			with com.sshtools.twoslices.impl.GNTPToaster.Service, com.sshtools.twoslices.impl.DBUSNotifyToaster.Service,
-			com.sshtools.twoslices.impl.NotifyToaster.Service, com.sshtools.twoslices.impl.GrowlToaster.Service,
+			with com.sshtools.twoslices.impl.GNTPToaster.Service, 
+			com.sshtools.twoslices.impl.GrowlToaster.Service, 
+			com.sshtools.twoslices.impl.DBUSNotifyToaster.Service,
+			com.sshtools.twoslices.impl.NotifyToaster.Service,
+			com.sshtools.twoslices.impl.JavaFXToaster.Service,
+			com.sshtools.twoslices.impl.SWTToaster.Service,
 			com.sshtools.twoslices.impl.NotificationCenterToaster.Service,
-			com.sshtools.twoslices.impl.OsXToaster.Service, com.sshtools.twoslices.impl.JavaFXToaster.Service,
-			com.sshtools.twoslices.impl.SWTToaster.Service, 
-			com.sshtools.twoslices.impl.BasicSWTToaster.Service, com.sshtools.twoslices.impl.AWTToaster.Service,
+			com.sshtools.twoslices.impl.OsXToaster.Service,  
+			com.sshtools.twoslices.impl.BasicSWTToaster.Service,
+			com.sshtools.twoslices.impl.AWTToaster.Service,
 			com.sshtools.twoslices.impl.SysOutToaster.Service;
 }

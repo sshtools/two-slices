@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
@@ -135,7 +136,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		super(configuration);
 		capabilities.addAll(Arrays.asList(Capability.ACTIONS, Capability.CLOSE, Capability.DEFAULT_ACTION, Capability.IMAGES));
 		try {
-			conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
+			conn = DBusConnectionBuilder.forSessionBus().build();
 
 			/* https://github.com/hypfvieh/dbus-java/issues/159 */
 //			conn.changeThreadCount((byte)1);

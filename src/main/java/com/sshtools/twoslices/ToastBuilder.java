@@ -15,6 +15,7 @@
  */
 package com.sshtools.twoslices;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -249,6 +250,22 @@ public class ToastBuilder {
 	}
 
 	/**
+	 * Convenience method to set the icon for this toast using a URL. This can be
+	 * used for example with class path resource URLs (when supported), internet
+	 * URLs (when supported) or file URLs. All notification systems support absolute
+	 * path names to file resources, as well as string representations of
+	 * {@link URL}s. Some may support logical names, such as Freedesktop Icon Names
+	 * like "dialog-info".
+	 * 
+	 * @param icon icon name or path
+	 * @return this for chaining
+	 */
+	public ToastBuilder icon(URL icon) {
+		this.icon = icon.toString();
+		return this;
+	}
+
+	/**
 	 * Get the image for this toast. Some notification systems may support an additional
 	 * image as well as an {@link #icon()}. All notification systems support absolute path names to
 	 * file resources, as well as string representations of {@link URL}s. Some may
@@ -271,6 +288,22 @@ public class ToastBuilder {
 	 */
 	public ToastBuilder image(String image) {
 		this.image = image;
+		return this;
+	}
+
+	/**
+	 * Convenience method to set the image for this toast using a URL. Some notification systems may support an additional
+	 * image as well as an {@link #icon()}. This can be
+	 * used for example with class path resource URLs (when supported), internet
+	 * URLs (when supported) or file URLs.  All notification systems support absolute path names to
+	 * file resources, as well as string representations of {@link URL}s. Some may
+	 * support logical names, such as Freedesktop Icon Names like "dialog-info".
+	 * 
+	 * @param icon icon name or path
+	 * @return this for chaining
+	 */
+	public ToastBuilder image(URL image) {
+		this.image = image.toString();
 		return this;
 	}
 	

@@ -252,10 +252,7 @@ public class ToastBuilder {
 	/**
 	 * Convenience method to set the icon for this toast using a URL. This can be
 	 * used for example with class path resource URLs (when supported), internet
-	 * URLs (when supported) or file URLs. All notification systems support absolute
-	 * path names to file resources, as well as string representations of
-	 * {@link URL}s. Some may support logical names, such as Freedesktop Icon Names
-	 * like "dialog-info".
+	 * URLs (when supported) or file URLs. 
 	 * 
 	 * @param icon icon name or path
 	 * @return this for chaining
@@ -295,9 +292,7 @@ public class ToastBuilder {
 	 * Convenience method to set the image for this toast using a URL. Some notification systems may support an additional
 	 * image as well as an {@link #icon()}. This can be
 	 * used for example with class path resource URLs (when supported), internet
-	 * URLs (when supported) or file URLs.  All notification systems support absolute path names to
-	 * file resources, as well as string representations of {@link URL}s. Some may
-	 * support logical names, such as Freedesktop Icon Names like "dialog-info".
+	 * URLs (when supported) or file URLs. 
 	 * 
 	 * @param icon icon name or path
 	 * @return this for chaining

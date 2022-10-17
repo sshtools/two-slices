@@ -71,6 +71,13 @@ public class SWTToaster extends AbstractToaster {
 	public final static String IMAGE_SIZE = "imageSize";
 
 	/**
+	 * Key for {@link ToasterSettings#getProperties()} hint for the maximum size of
+	 * the icon. Should be an {@link Integer}. Any size lower than this will be
+	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}.
+	 */
+	public final static String ICON_SIZE = "iconSize";
+
+	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint to use animated window
 	 * positioning. This is experimental, as there are some issues.
 	 */
@@ -132,6 +139,7 @@ public class SWTToaster extends AbstractToaster {
 
 		private static final int TEXT_WIDTH = 400;
 		private static final int IMAGE_SIZE = 128;
+		private static final int ICON_SIZE = 24;
 		private static final int DEFAULT_OFFSET = 64;
 		private static final int SPACING = 8;
 		private static final int ANIMATION_TIME = 250;
@@ -181,7 +189,34 @@ public class SWTToaster extends AbstractToaster {
 			topRow.setLayout(topLayout);
 			topRow.addMouseListener(defaultListener);
 
-			if (builder.type() != ToastType.NONE) {
+
+			if (builder.icon() != null) {
+				icon = new Label(topRow, SWT.NONE);
+				var data = new GridData();
+				data.widthHint = 24;
+				data.heightHint = 24;
+				icon.setLayoutData(data);
+				
+				Image image = null;
+				try {
+					var u = new URL(builder.icon());
+					try(var in = u.openStream()) {
+						image = new Image(display, in);
+					}
+				}
+				catch(Exception e) {
+					image = new Image(display, builder.icon());
+				}
+
+				image = proportionalImage((Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE), image);
+				var fImage = image;
+				shell.addDisposeListener((e) -> fImage.dispose());
+				icon.setImage(image);
+				data.widthHint = image.getImageData().width;
+				data.heightHint = image.getImageData().height;
+				icon.pack();
+			}
+			else if (builder.type() != ToastType.NONE) {
 				icon = new Label(topRow, SWT.NONE);
 				var data = new GridData();
 				data.widthHint = 24;
@@ -234,27 +269,13 @@ public class SWTToaster extends AbstractToaster {
 				catch(Exception e) {
 					image = new Image(display, builder.image());
 				}
-				var maxImageSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE);
-				var imageWidth = image.getBounds().width;
-				var imageHeight = image.getBounds().height;
-				var imax = Math.max(imageWidth, imageHeight);
-				var newImageWidth = imageWidth;
-				var newImageHeight = imageHeight;
-				if (imax > maxImageSize) {
-					var r = (float) maxImageSize / (float) imax;
-					newImageWidth = (int) ((float) imageWidth * r);
-					newImageHeight = (int) ((float) imageHeight * r);
-				}
-				if (newImageWidth != imageWidth || newImageHeight != imageHeight) {
-					var newImage = getScaledImage(image, newImageWidth, newImageHeight);
-					image.dispose();
-					image = newImage;
-				}
+				
+				image = proportionalImage((Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE), image);
 				imageLabel.setImage(image);
-				var imageData = new RowData(newImageWidth, newImageHeight);
+				var imageData = new RowData(image.getImageData().width, image.getImageData().height);
 				imageLabel.setLayoutData(imageData);
 				imageLabel.pack();
-				imageSpace = newImageWidth;
+				imageSpace = image.getImageData().width;
 			}
 
 			int textWidth = builder.image() == null ? TEXT_WIDTH : TEXT_WIDTH - imageSpace;
@@ -317,6 +338,25 @@ public class SWTToaster extends AbstractToaster {
 
 			show();
 			startTimer();
+		}
+		
+		private Image proportionalImage(int size, Image image) {
+			var imageWidth = image.getBounds().width;
+			var imageHeight = image.getBounds().height;
+			var imax = Math.max(imageWidth, imageHeight);
+			var newImageWidth = imageWidth;
+			var newImageHeight = imageHeight;
+			if (imax > size) {
+				var r = (float) size / (float) imax;
+				newImageWidth = (int) ((float) imageWidth * r);
+				newImageHeight = (int) ((float) imageHeight * r);
+			}
+			if (newImageWidth != imageWidth || newImageHeight != imageHeight) {
+				var newImage = getScaledImage(image, newImageWidth, newImageHeight);
+				image.dispose();
+				image = newImage;
+			}
+			return image;
 		}
 
 		private void startTimer() {

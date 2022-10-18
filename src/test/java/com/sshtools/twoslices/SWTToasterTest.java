@@ -27,7 +27,8 @@ public class SWTToasterTest extends AbstractToasterTest {
 		new Thread() {
 			public void run() {
 				try {
-					testToaster(new SWTToaster(new ToasterSettings()));
+					var settings = new ToasterSettings();
+					testToaster(new SWTToaster(settings));
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {

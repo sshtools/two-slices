@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -66,14 +67,16 @@ public class SWTToaster extends AbstractToaster {
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for the maximum size of
 	 * image content. Should be an {@link Integer}. Any size lower than this will be
-	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}.
+	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}. Use a size of
+	 * zero to prevent scaling entirely.
 	 */
 	public final static String IMAGE_SIZE = "imageSize";
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for the maximum size of
 	 * the icon. Should be an {@link Integer}. Any size lower than this will be
-	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}.
+	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}. Use a size of
+	 * zero to prevent scaling entirely.
 	 */
 	public final static String ICON_SIZE = "iconSize";
 
@@ -208,7 +211,9 @@ public class SWTToaster extends AbstractToaster {
 					image = new Image(display, builder.icon());
 				}
 
-				image = proportionalImage((Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE), image);
+				var iconSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE);
+				if(iconSize > 0)
+					image = proportionalImage(iconSize, image);
 				var fImage = image;
 				shell.addDisposeListener((e) -> fImage.dispose());
 				icon.setImage(image);
@@ -222,9 +227,15 @@ public class SWTToaster extends AbstractToaster {
 				data.widthHint = 24;
 				data.heightHint = 24;
 				icon.setLayoutData(data);
-				Image s = getScaledImage(getTypeImage(builder.type()), 24);
-				shell.addDisposeListener((e) -> s.dispose());
-				icon.setImage(s);
+				var img = getTypeImage(builder.type());
+				var iconSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE);
+				if(iconSize > 0)
+					img  = getScaledImage(img, iconSize);
+				var fImage = img;
+				shell.addDisposeListener((e) -> fImage.dispose());
+				data.widthHint = img.getImageData().width;
+				data.heightHint = img.getImageData().height;
+				icon.setImage(img);
 				icon.pack();
 			}
 
@@ -270,7 +281,9 @@ public class SWTToaster extends AbstractToaster {
 					image = new Image(display, builder.image());
 				}
 				
-				image = proportionalImage((Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE), image);
+				var imageSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE);
+				if(imageSize > 0)
+					image = proportionalImage(imageSize, image);
 				imageLabel.setImage(image);
 				var imageData = new RowData(image.getImageData().width, image.getImageData().height);
 				imageLabel.setLayoutData(imageData);
@@ -511,10 +524,36 @@ public class SWTToaster extends AbstractToaster {
 			return getScaledImage(image, sz, sz);
 		}
 
-		static Image getScaledImage(Image image, int sx, int sy) {
-			var data = image.getImageData();
-			data = data.scaledTo(sx, sy);
-			return new Image(image.getDevice(), data, data);
+		static Image getScaledImage(Image img, int sx, int sy) {
+		    final Rectangle origBounds = img.getBounds();     
+		    if (origBounds.width == sx && origBounds.height == sy) {     
+		        return img;     
+		    }     
+
+		    final ImageData origData = img.getImageData();     
+		    final ImageData destData = new ImageData(sx, sy, origData.depth, origData.palette);     
+		    if (origData.alphaData != null) {     
+		        destData.alphaData = new byte[destData.width * destData.height];     
+		        for (int destRow = 0; destRow < destData.height; destRow++) {     
+		            for (int destCol = 0; destCol < destData.width; destCol++) {     
+		                final int origRow = destRow * origData.height / destData.height;     
+		                final int origCol = destCol * origData.width / destData.width;     
+		                final int o = origRow * origData.width + origCol;     
+		                final int d = destRow * destData.width + destCol;     
+		                destData.alphaData[d] = origData.alphaData[o];     
+		            }     
+		        }     
+		    }     
+
+		    final Image dest = new Image(img.getDevice(), destData);     
+
+		    final GC gc = new GC(dest);     
+		    gc.setAntialias(SWT.ON);     
+		    gc.setInterpolation(SWT.HIGH);     
+		    gc.drawImage(img, 0, 0, origBounds.width, origBounds.height, 0, 0, sx, sy);     
+		    gc.dispose();
+
+		    return dest;
 		}
 
 		private static final Image createCloseImage(Display display, Color bg, Color fg) {

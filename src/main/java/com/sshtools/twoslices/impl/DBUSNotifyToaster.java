@@ -134,6 +134,10 @@ public class DBUSNotifyToaster extends AbstractToaster {
 	 */
 	public DBUSNotifyToaster(ToasterSettings configuration) {
 		super(configuration);
+		
+		if(!System.getProperty("os.name", "").toLowerCase().contains("linux"))
+			throw new UnsupportedOperationException();
+		
 		capabilities.addAll(Arrays.asList(Capability.ACTIONS, Capability.CLOSE, Capability.DEFAULT_ACTION, Capability.IMAGES));
 		try {
 			conn = DBusConnectionBuilder.forSessionBus().build();

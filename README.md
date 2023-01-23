@@ -177,7 +177,7 @@ would do the following.
 
 ```java
 ToasterSettings settings = new ToasterSettings();
-settings.getProperties().put(SWTToaster.ICON_SIZE, "64");
+settings.getProperties().put(SWTToaster.ICON_SIZE, 64);
 ToasterFactory.setSettings(settings);
 ```
 

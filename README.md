@@ -172,6 +172,15 @@ toasters can ignore any and all of them.
 ToasterFactory.setSettings(new ToasterSettings().setAppName("My App Name"));
 ```
 
+Some toaster implementations have addition hints that can be passed. For example, to resize icons or images in the SWT implementation, you
+would do the following.
+
+```java
+ToasterSettings settings = new ToasterSettings();
+settings.getProperties().put(SWTToaster.ICON_SIZE, "64");
+ToasterFactory.setSettings(settings);
+```
+
 ### The Tray Icon Mode
 
 Some implementations will require and/or show an icon in your system tray. This will be where the notification

@@ -258,7 +258,7 @@ public class ToastBuilder {
 	 * @return this for chaining
 	 */
 	public ToastBuilder icon(URL icon) {
-		this.icon = icon.toString();
+		this.icon = icon == null ? null : icon.toString();
 		return this;
 	}
 
@@ -487,8 +487,10 @@ public class ToastBuilder {
 	 */
 	public Slice toast() {
 		if(toaster == null) {
-			toaster = ToasterFactory.getFactory().toaster();
+			return ToasterFactory.getFactory().toaster().toast(this);
 		}
-		return toaster.toast(this);
+		else {
+			return toaster.toast(this);
+		}
 	}
 }

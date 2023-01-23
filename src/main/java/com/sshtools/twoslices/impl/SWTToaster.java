@@ -18,6 +18,8 @@ package com.sshtools.twoslices.impl;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -43,7 +45,9 @@ import org.eclipse.swt.widgets.Shell;
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastBuilder;
+import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
@@ -148,22 +152,40 @@ public class SWTToaster extends AbstractToaster {
 		private static final int ANIMATION_TIME = 250;
 
 		private Shell shell;
-		private Label title;
-		private Label content;
-		private Label icon;
+		private Label titleLabel;
+		private Label contentLabel;
+		private Label iconLabel;
 		private ToasterSettings settings;
 		private Display display;
 		private long animStarted;
 		private Point endPosition;
 		private Point startPosition;
-		private ToastBuilder builder;
 		private Thread timerThread;
 		private Thread swtThread;
+		private ToastAction defaultAction;
+		private final String icon;
+		private final ToastType type;
+		private final String image;
+		private final String title;
+		private final String content;
+		private final List<ToastAction> actions;
+		private final ToastActionListener closed;
+		private final int timeout;
 
 		public PopupWindow(Display display, ToastBuilder builder, ToasterSettings settings) {
 			this.settings = settings;
 			this.display = display;
-			this.builder = builder;
+			
+			defaultAction = builder.defaultAction();
+			icon = builder.icon();
+			type = builder.type();
+			title = builder.title();
+			image = builder.image();
+			content = builder.content();
+			actions = Collections.unmodifiableList(builder.actions());
+			closed = builder.closed();
+			timeout = builder.timeout();
+			
 		}
 
 		public void popup(Shell hidden) {
@@ -171,8 +193,8 @@ public class SWTToaster extends AbstractToaster {
 			var defaultListener = new MouseListener() {
 				@Override
 				public void mouseUp(MouseEvent e) {
-					if (builder.defaultAction() != null && builder.defaultAction().listener() != null)
-						builder.defaultAction().listener().action();
+					if (defaultAction != null && defaultAction.listener() != null)
+						defaultAction.listener().action();
 				}
 
 				@Override
@@ -193,22 +215,22 @@ public class SWTToaster extends AbstractToaster {
 			topRow.addMouseListener(defaultListener);
 
 
-			if (builder.icon() != null) {
-				icon = new Label(topRow, SWT.NONE);
+			if (icon != null) {
+				iconLabel = new Label(topRow, SWT.NONE);
 				var data = new GridData();
 				data.widthHint = 24;
 				data.heightHint = 24;
-				icon.setLayoutData(data);
+				iconLabel.setLayoutData(data);
 				
 				Image image = null;
 				try {
-					var u = new URL(builder.icon());
+					var u = new URL(icon);
 					try(var in = u.openStream()) {
 						image = new Image(display, in);
 					}
 				}
 				catch(Exception e) {
-					image = new Image(display, builder.icon());
+					image = new Image(display, icon);
 				}
 
 				var iconSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE);
@@ -216,18 +238,18 @@ public class SWTToaster extends AbstractToaster {
 					image = proportionalImage(iconSize, image);
 				var fImage = image;
 				shell.addDisposeListener((e) -> fImage.dispose());
-				icon.setImage(image);
+				iconLabel.setImage(image);
 				data.widthHint = image.getImageData().width;
 				data.heightHint = image.getImageData().height;
-				icon.pack();
+				iconLabel.pack();
 			}
-			else if (builder.type() != ToastType.NONE) {
-				icon = new Label(topRow, SWT.NONE);
+			else if (type != ToastType.NONE) {
+				iconLabel = new Label(topRow, SWT.NONE);
 				var data = new GridData();
 				data.widthHint = 24;
 				data.heightHint = 24;
-				icon.setLayoutData(data);
-				var img = getTypeImage(builder.type());
+				iconLabel.setLayoutData(data);
+				var img = getTypeImage(type);
 				var iconSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE);
 				if(iconSize > 0)
 					img  = getScaledImage(img, iconSize);
@@ -235,19 +257,19 @@ public class SWTToaster extends AbstractToaster {
 				shell.addDisposeListener((e) -> fImage.dispose());
 				data.widthHint = img.getImageData().width;
 				data.heightHint = img.getImageData().height;
-				icon.setImage(img);
-				icon.pack();
+				iconLabel.setImage(img);
+				iconLabel.pack();
 			}
 
-			if (builder.title() != null) {
-				title = new Label(topRow, SWT.NONE);
+			if (title != null) {
+				titleLabel = new Label(topRow, SWT.NONE);
 				var data = new GridData();
 				data.grabExcessHorizontalSpace = true;
 				data.grabExcessVerticalSpace = true;
-				title.setLayoutData(data);
-				title.setText(builder.title());
-				title.setFont(createDerivedFont(title, 16));
-				title.pack();
+				titleLabel.setLayoutData(data);
+				titleLabel.setText(title);
+				titleLabel.setFont(createDerivedFont(titleLabel, 16));
+				titleLabel.pack();
 			}
 
 			var close = new Button(topRow, SWT.NONE);
@@ -268,61 +290,61 @@ public class SWTToaster extends AbstractToaster {
 			contentPaneLayout.spacing = SPACING;
 			contentPane.setLayout(contentPaneLayout);
 
-			if (builder.image() != null) {
+			if (image != null) {
 				var imageLabel = new Label(contentPane, SWT.NONE);
-				Image image = null;
+				Image imageObj = null;
 				try {
-					var u = new URL(builder.image());
+					var u = new URL(image);
 					try(var in = u.openStream()) {
-						image = new Image(display, in);
+						imageObj = new Image(display, in);
 					}
 				}
 				catch(Exception e) {
-					image = new Image(display, builder.image());
+					imageObj = new Image(display, image);
 				}
 				
 				var imageSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE);
 				if(imageSize > 0)
-					image = proportionalImage(imageSize, image);
-				imageLabel.setImage(image);
-				var imageData = new RowData(image.getImageData().width, image.getImageData().height);
+					imageObj = proportionalImage(imageSize, imageObj);
+				imageLabel.setImage(imageObj);
+				var imageData = new RowData(imageObj.getImageData().width, imageObj.getImageData().height);
 				imageLabel.setLayoutData(imageData);
 				imageLabel.pack();
-				imageSpace = image.getImageData().width;
+				imageSpace = imageObj.getImageData().width;
 			}
 
-			int textWidth = builder.image() == null ? TEXT_WIDTH : TEXT_WIDTH - imageSpace;
+			int textWidth = image == null ? TEXT_WIDTH : TEXT_WIDTH - imageSpace;
 
-			if (builder.content() != null) {
-				content = new Label(contentPane, SWT.WRAP);
-				content.setText(builder.content());
+			if (content != null) {
+				contentLabel = new Label(contentPane, SWT.WRAP);
+				contentLabel.setText(content);
 				var contentData = new RowData();
 				contentData.width = textWidth;
-				content.setLayoutData(contentData);
-				content.pack();
-				content.addListener(SWT.Modify, event -> {
-					int currentHeight = content.getSize().y;
-					int preferredHeight = content.computeSize(textWidth, SWT.DEFAULT).y;
+				contentLabel.setLayoutData(contentData);
+				contentLabel.pack();
+				contentLabel.addListener(SWT.Modify, event -> {
+					int currentHeight = contentLabel.getSize().y;
+					int preferredHeight = contentLabel.computeSize(textWidth, SWT.DEFAULT).y;
 					if (currentHeight != preferredHeight) {
 						contentData.height = preferredHeight;
-						content.pack();
+						contentLabel.pack();
 						shell.pack();
 						shell.setLocation(to());
 					}
 				});
-				content.addMouseListener(defaultListener);
+				contentLabel.addMouseListener(defaultListener);
 			}
 
-			if (!builder.actions().isEmpty()) {
-				var actions = new Composite(shell, SWT.NONE);
+			if (!actions.isEmpty()) {
+				var actionsWidget = new Composite(shell, SWT.NONE);
 				var actionsRow = new RowLayout(SWT.HORIZONTAL);
 				actionsRow.spacing = SPACING;
 				actionsRow.wrap = false;
 				actionsRow.fill = true;
 				actionsRow.justify = false;
-				actions.setLayout(actionsRow);
-				for (var action : builder.actions()) {
-					var actionButton = new Button(actions, SWT.NONE);
+				actionsWidget.setLayout(actionsRow);
+				for (var action : actions) {
+					var actionButton = new Button(actionsWidget, SWT.NONE);
 					actionButton.setText(action.displayName());
 					if (action.listener() == null)
 						actionButton.setGrayed(true);
@@ -334,9 +356,9 @@ public class SWTToaster extends AbstractToaster {
 			}
 			shell.addMouseListener(defaultListener);
 
-			if (builder.closed() != null) {
+			if (closed != null) {
 				shell.addDisposeListener((e) -> {
-					builder.closed().action();
+					closed.action();
 				});
 			}
 
@@ -373,12 +395,12 @@ public class SWTToaster extends AbstractToaster {
 		}
 
 		private void startTimer() {
-			if (builder.timeout() == 0)
+			if (timeout == 0)
 				return;
 			timerThread = new Thread() {
 				public void run() {
 					try {
-						Thread.sleep((builder.timeout() == -1 ? settings.getTimeout() : builder.timeout()) * 1000);
+						Thread.sleep((timeout == -1 ? settings.getTimeout() : timeout) * 1000);
 						try {
 							close();
 						} catch (IOException e) {

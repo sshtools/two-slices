@@ -79,14 +79,28 @@ public class BasicSWTToaster extends AbstractToaster {
 	class SWTSlice implements Slice {
 		
 		private Display display;
-		private boolean closed = false;
+		private boolean isClosed = false;
+		
+		private final String icon;
+		private final ToastType type;
+		private final String title;
+		private final String content;
+		private final int timeout;
+		
+		SWTSlice(ToastBuilder builder) {
+			type = builder.type();
+			icon = builder.icon();
+			title = builder.title();
+			content = builder.content();
+			timeout = builder.timeout();
+		}
 
 		@Override
 		public void close() throws IOException {
 			synchronized (lock) {
-				if(closed)
+				if(isClosed)
 					return;
-				closed = true;
+				isClosed = true;
 				var fTip = tip;
 				display.asyncExec(() -> {
 					if (fTip != null)
@@ -132,10 +146,10 @@ public class BasicSWTToaster extends AbstractToaster {
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		return doToast(builder, new SWTSlice());
+		return doToast(new SWTSlice(builder));
 	}
 
-	protected Slice doToast(ToastBuilder builder, SWTSlice slice) {
+	protected Slice doToast(SWTSlice slice) {
 		synchronized (lock) {
 			var display = Display.getDefault();
 			if (!ready) {
@@ -143,14 +157,14 @@ public class BasicSWTToaster extends AbstractToaster {
 				if (now < started + STARTUP_WAIT) {
 					display.asyncExec(() -> display.timerExec((int) ((started + STARTUP_WAIT) - now), () -> {
 						ready = true;
-						doToast(builder, slice);
+						doToast(slice);
 					}));
 					return slice;
 				}
 			}
 			display.asyncExec(() -> {
 				synchronized (lock) {
-					var swtCode = typeToSWTCode(builder.type());
+					var swtCode = typeToSWTCode(slice.type);
 					if (tip == null || swtCode != lastSwtCode) {
 						if (tip != null)
 							tip.dispose();
@@ -160,7 +174,7 @@ public class BasicSWTToaster extends AbstractToaster {
 					} else {
 						timer.interrupt();
 					}
-					doShow(builder, display, slice);
+					doShow(display, slice);
 				}
 			});
 			return slice;
@@ -213,17 +227,17 @@ public class BasicSWTToaster extends AbstractToaster {
 		return result[0];
 	}
 
-	private void doShow(ToastBuilder builder, Display display, SWTSlice slice) {
+	private void doShow(Display display, SWTSlice slice) {
 		slice.display = display;
-		tip.setMessage(builder.content());
-		var icon = builder.icon();
+		tip.setMessage(slice.content);
+		var icon = slice.icon;
 		if(configuration.getSystemTrayIconMode() != SystemTrayIconMode.ORIGINAL) {
 			if (configuration.getParent() != null && lastImage == null) {
 				lastImage = item.getImage();
 			}
 			if (icon == null || icon.length() == 0)
 				try {
-					item.setImage(getPlatformImage(getTypeImage(builder.type())));
+					item.setImage(getPlatformImage(getTypeImage(slice.type)));
 				} catch (IOException e1) {
 					try {
 						item.setImage(getPlatformImage(getTypeImage(null)));
@@ -235,7 +249,7 @@ public class BasicSWTToaster extends AbstractToaster {
 				item.setImage(getPlatformImage(new Image(display, icon)));
 			item.setToolTip(tip);
 		}
-		tip.setText(builder.title());
+		tip.setText(slice.title);
 		tip.setVisible(true);
 		item.setVisible(true);
 		if(timer != null) {
@@ -245,11 +259,11 @@ public class BasicSWTToaster extends AbstractToaster {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep((builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout()) * 1000);
+					Thread.sleep((slice.timeout == -1 ? configuration.getTimeout() : slice.timeout) * 1000);
 					slice.close();
 				} catch (Exception ie) {
 				} finally {
-					slice.closed = true;
+					slice.isClosed = true;
 				}
 			}
 		};

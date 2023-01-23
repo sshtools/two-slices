@@ -81,37 +81,43 @@ public class AWTToaster extends AbstractToaster implements ActionListener {
 			return Slice.defaultSlice();
 		}
 			
-		final var tray = SystemTray.getSystemTray();
+		var tray = SystemTray.getSystemTray();
+		var icon = builder.icon();
+		var type = builder.type();
+		var title = builder.title();
+		var content = builder.content();
+		var closed = builder.closed();
+		
 		try {
 			if (trayIcon == null) {
 				if (configuration.getParent() != null) {
 					trayIcon = (TrayIcon) configuration.getParent();
-				} else if (builder.icon()== null || builder.icon().length() == 0) {
-					trayIcon = new TrayIcon(getPlatformImage(getTypeImage(builder.type())), builder.title());
+				} else if (icon== null || icon.length() == 0) {
+					trayIcon = new TrayIcon(getPlatformImage(getTypeImage(type)), title);
 					tray.add(trayIcon);
 				}
 				else {
-					trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(builder.icon()))), builder.title());
+					trayIcon = new TrayIcon(getPlatformImage(ImageIO.read(new File(icon))), title);
 					tray.add(trayIcon);
 				}
 				trayIcon.addActionListener(this);
 			} else {
-				if (builder.icon() == null || builder.icon().length() == 0) {
-					trayIcon.setImage(getPlatformImage(getTypeImage(builder.type())));
+				if (icon == null || icon.length() == 0) {
+					trayIcon.setImage(getPlatformImage(getTypeImage(type)));
 				} else
-					trayIcon.setImage(getPlatformImage(ImageIO.read(new File(builder.icon()))));
-				trayIcon.setToolTip(builder.title());
+					trayIcon.setImage(getPlatformImage(ImageIO.read(new File(icon))));
+				trayIcon.setToolTip(title);
 				if(timer != null)
 					timer.interrupt();
 			}
-			trayIcon.displayMessage(builder.title(), builder.content(), TrayIcon.MessageType.valueOf(builder.type().name()));
+			trayIcon.displayMessage(title, content, TrayIcon.MessageType.valueOf(type.name()));
 			timer = new Thread("AWTNotifierWait") {
 				@Override
 				public void run() {
 					try {
 						Thread.sleep(configuration.getTimeout() * 1000);
-						if(builder.closed() != null) {
-							builder.closed().action();
+						if(closed != null) {
+							closed.action();
 						}
 						timer = null;
 						if (configuration.getSystemTrayIconMode() != SystemTrayIconMode.SHOW_DEFAULT_ALWAYS) {
@@ -127,9 +133,9 @@ public class AWTToaster extends AbstractToaster implements ActionListener {
 			};
 			timer.start();
 		} catch (IOException ioe) {
-			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), ioe);
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), ioe);
 		} catch (AWTException e) {
-			throw new ToasterException(String.format("Failed to show toast for %s: %s", builder.type(), builder.title()), e);
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), e);
 		}
 		return Slice.defaultSlice();
 	}

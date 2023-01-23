@@ -41,4 +41,27 @@ public class SWTToasterTest extends AbstractToasterTest {
 				display.sleep();
 		}
 	}
+	
+	@Test
+	public void testSWTScaledIcons() {
+		var display = Display.getDefault();
+		new Thread() {
+			public void run() {
+				try {
+					var settings = new ToasterSettings();
+					settings.getProperties().put(SWTToaster.ICON_SIZE, 64);
+					settings.getProperties().put(SWTToaster.IMAGE_SIZE, 512);
+					testToaster(new SWTToaster(settings));
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					display.asyncExec(() -> display.dispose());
+				}
+			}
+		}.start();
+		while (!display.isDisposed()) {
+			if (!display.readAndDispatch())
+				display.sleep();
+		}
+	}
 }

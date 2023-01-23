@@ -172,7 +172,7 @@ toasters can ignore any and all of them.
 ToasterFactory.setSettings(new ToasterSettings().setAppName("My App Name"));
 ```
 
-Some toaster implementations have addition hints that can be passed. For example, to resize icons or images in the SWT implementation, you
+Some toaster implementations have additional hints that can be passed. For example, to resize icons or images in the SWT implementation, you
 would do the following.
 
 ```java

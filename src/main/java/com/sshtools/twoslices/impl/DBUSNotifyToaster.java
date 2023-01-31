@@ -16,11 +16,16 @@
 package com.sshtools.twoslices.impl;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
@@ -36,9 +41,9 @@ import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastBuilder;
+import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
-import com.sshtools.twoslices.ToastBuilder.ToastAction;
 import com.sshtools.twoslices.ToasterSettings;
 
 import uk.co.bithatch.nativeimage.annotations.Proxy;
@@ -118,6 +123,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		UInt32 id;
 		ToastActionListener closed;
 		public boolean destroyed;
+		Set<Path> tempImagePath = new LinkedHashSet<>();
 		
 		@Override
 		public void close() throws IOException {
@@ -179,6 +185,13 @@ public class DBUSNotifyToaster extends AbstractToaster {
 					if (active != null) {
 						active.destroyed = true;
 						actives.remove(s.id);
+						for(var p : active.tempImagePath) {
+							try {
+								Files.delete(p);
+							}
+							catch(Exception e) {
+							}
+						}
 					}
 				}
 			});
@@ -207,6 +220,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		args.add("notify-send");
 		var icon = builder.icon();
 		var type = builder.type();
+		var tempImagePaths = new LinkedHashSet<Path>();
 
 		if (icon == null || icon.length() == 0) {
 			switch (type) {
@@ -223,9 +237,12 @@ public class DBUSNotifyToaster extends AbstractToaster {
 				}
 			}
 		}
+		else {
+			icon = ensureImageLocalPath(icon, tempImagePaths).toAbsolutePath().toString();
+		}
 		var image = builder.image();
 		if (image != null && image.length() > 0) {
-			hints.put("image-path", new Variant<String>(image));
+			hints.put("image-path", new Variant<String>(ensureImageLocalPath(image, tempImagePaths).toAbsolutePath().toString()));
 		}
 		var toastActions = builder.actions();
 		if(builder.defaultAction() != null) {
@@ -237,6 +254,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 			actions.add(a.displayName());
 		}
 		var active = new ActiveNotification();
+		active.tempImagePath.addAll(tempImagePaths);
 		if (builder.timeout() == 0) {
 			hints.put("urgency", new Variant<Byte>(Byte.valueOf((byte) 2)));
 		}
@@ -252,6 +270,35 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		this.actives.put(active.id, active);
 		
 		return active;
+	}
+	
+	Path ensureImageLocalPath(String uriOrPath, Set<Path> tempFiles) {
+		try {
+			URL url = new URL(uriOrPath);
+			var path = url.getPath();
+			if(url.getProtocol().equals("file")) {
+				return Path.of(path);
+			}
+			else {
+				var idx = path.lastIndexOf('.');
+				String ext = "img";
+				if(idx > -1) {
+					ext = path.substring(idx + 1);
+				}
+				var tempImagePath = Files.createTempFile("twoslices", "." + ext);
+				try(var in = url.openStream()) {
+					try(var out = Files.newOutputStream(tempImagePath)) {
+						in.transferTo(out);
+					}
+				}
+				tempImagePath.toFile().deleteOnExit();
+				tempFiles.add(tempImagePath);
+				return tempImagePath;
+			}
+		}
+		catch(Exception e) {
+			return Path.of(uriOrPath);
+		}		
 	}
 
 }

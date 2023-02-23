@@ -16,7 +16,7 @@
 import com.sshtools.twoslices.ToasterService;
 
 module com.sshtools.twoslices {
-	requires uk.co.bithatch.nativeimage.annotations;
+	requires static uk.co.bithatch.nativeimage.annotations;
 	
 	requires static java.desktop;
 	requires static java.scripting;

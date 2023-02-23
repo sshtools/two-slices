@@ -77,13 +77,13 @@
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>dbus-java-core</artifactId>
-			<version>4.2.0</version>
+			<version>4.2.1</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>dbus-java-transport-native-unixsocket</artifactId>
-			<version>4.2.0</version>
+			<version>4.2.1</version>
 			<optional>true</optional>
 			<scope>provided</scope>
 		</dependency>

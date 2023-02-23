@@ -141,7 +141,19 @@ All other platforms (AWT)</description>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.10.1</version>
+					<configuration>
+						<compilerArgs>
+							<!--
+							<compilerArg>XXadd-exports</compilerArg>
+							<compilerArg>org.eclipse.swt.gtk.linux.x86_64/org.eclipse.swt=ALL-UNNAMED</compilerArg>
+							<compilerArg>XXadd-reads</compilerArg>
+							<compilerArg>org.eclipse.swt.gtk.linux.x86_64=ALL-UNNAMED</compilerArg>
+							-->
+							<compilerArg>--patch-module</compilerArg>
+							<compilerArg>org.eclipse.swt.gtk.linux.x86_64=com.sshtools.twoslices</compilerArg>
+						</compilerArgs>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

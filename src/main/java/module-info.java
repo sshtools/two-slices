@@ -21,7 +21,6 @@ module com.sshtools.twoslices {
 	requires static java.desktop;
 	requires static java.scripting;
 	requires static org.freedesktop.dbus;
-	requires static transitive org.eclipse.swt.gtk.linux.x86_64;
 
 	/*
 	 * TODO This is going to be tricky. SWT Maven artifact naming just is not
@@ -32,7 +31,8 @@ module com.sshtools.twoslices {
 	 * While it seems we can add multiple modules here, any attempt to actually use
 	 * them results in compiler errors.
 	 */
-	// requires static org.eclipse.swt.win32.win32.x86_64;
+	requires static org.eclipse.swt;
+	requires static org.eclipse.swt.gtk.linux.x86_64;
 
 	requires static javafx.controls;
 	requires static javafx.graphics;

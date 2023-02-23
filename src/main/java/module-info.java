@@ -40,6 +40,7 @@ module com.sshtools.twoslices {
 	requires static com.sun.jna;
 
 	exports com.sshtools.twoslices;
+	exports com.sshtools.twoslices.impl to org.freedesktop.dbus;
 
 	uses ToasterService;
 

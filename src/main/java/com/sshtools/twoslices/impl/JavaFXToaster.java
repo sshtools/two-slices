@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import org.controlsfx.control.Notifications;
 import org.controlsfx.control.action.Action;
@@ -55,7 +56,7 @@ import javafx.util.Duration;
  * classpath.
  */
 public class JavaFXToaster extends AbstractToaster {
-
+	
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for a CSS stylesheet URI
 	 * to use. Should be a {@link String}.
@@ -67,6 +68,12 @@ public class JavaFXToaster extends AbstractToaster {
 	 * to use. Should be a {@link List} of {@link String}.
 	 */
 	public final static String STYLESHEETS = "stylesheets";
+
+	/**
+	 * Key for {@link ToasterSettings#getProperties()} hint for a an instance of a {@link Function<ToastType, Node>}. 
+	 * This should generate a new node for a given toast type.
+	 */
+	public final static String TYPE_ICON_GENERATOR = "typeIconGenerator";
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for a CSS style to use.
 	 * Should be a {@link String}.
@@ -195,6 +202,12 @@ public class JavaFXToaster extends AbstractToaster {
 				anchorPane.setMaxWidth(256);
 				anchorPane.setMaxHeight(256);
 				n.graphic(anchorPane);
+				type = ToastType.NONE;
+			}
+			else if(configuration.getProperties().containsKey(TYPE_ICON_GENERATOR)) {
+				@SuppressWarnings("unchecked")
+				var typeIconGenerator = (Function<ToastType, Node>)configuration.getProperties().get(TYPE_ICON_GENERATOR);
+				n.graphic(typeIconGenerator.apply(type));
 				type = ToastType.NONE;
 			}
 			n.action(as.toArray(new Action[0]));

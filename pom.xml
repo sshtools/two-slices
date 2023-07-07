@@ -77,20 +77,20 @@
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>dbus-java-core</artifactId>
-			<version>4.2.1</version>
+			<version>4.3.1-SNAPSHOT</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>dbus-java-transport-native-unixsocket</artifactId>
-			<version>4.2.1</version>
+			<version>4.3.1-SNAPSHOT</version>
 			<optional>true</optional>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>
-			<version>11.1.1</version>
+			<version>11.1.2</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -323,7 +323,7 @@ All other platforms (AWT)</description>
 				<dependency>
 					<groupId>com.github.hypfvieh</groupId>
 					<artifactId>dbus-java-transport-jnr-unixsocket</artifactId>
-					<version>4.2.0</version>
+					<version>4.3.1-SNAPSHOT</version>
 					<optional>true</optional>
 					<scope>test</scope>
 				</dependency>
@@ -338,7 +338,7 @@ All other platforms (AWT)</description>
 				<dependency>
 					<groupId>com.github.hypfvieh</groupId>
 					<artifactId>dbus-java-transport-native-unixsocket</artifactId>
-					<version>4.2.0</version>
+					<version>4.3.1-SNAPSHOT</version>
 					<optional>true</optional>
 					<scope>test</scope>
 				</dependency>

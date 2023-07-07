@@ -15,16 +15,6 @@
  */
 package com.sshtools.twoslices.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import org.controlsfx.control.Notifications;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.tools.Utils;
-
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
@@ -34,16 +24,24 @@ import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
 
+import org.controlsfx.control.Notifications;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.tools.Utils;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -224,11 +222,10 @@ public class JavaFXToaster extends AbstractToaster {
 					 * TODO not entirely convinced the stage will always be hidden. Seems to be here
 					 * on Linux Mint
 					 */
-					hidden = new Stage(StageStyle.UTILITY);
-					var text = new Text(10, 40, " ");
-					var scene = new Scene(new Group(text));
-					hidden.setScene(scene);
-					hidden.sizeToScene();
+					hidden = new Stage(StageStyle.TRANSPARENT);
+					hidden.setResizable(false);
+					hidden.setWidth(0);
+                    hidden.setHeight(0);
 				}
 				if (hidden != null)
 					hidden.show();

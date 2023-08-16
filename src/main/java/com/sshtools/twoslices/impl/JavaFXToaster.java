@@ -221,24 +221,42 @@ public class JavaFXToaster extends AbstractToaster {
 			});
 			if (configuration.getParent() == null) {
 				if (hidden == null && Utils.getWindow(null) == null) {
-					/*
-					 * TODO not entirely convinced the stage will always be hidden. Seems to be here
-					 * on Linux Mint
-					 */
-					hidden = new Stage(StageStyle.UTILITY);
-					
-					var text = new Text(10, 40, " ");
-					text.setStyle("-fx-background-color: transparent;");
-					
-					var grp = new Group(text);
-					grp.setStyle("-fx-background-color: transparent;");
-					
-                    var scene = new Scene(grp);
-                    scene.setFill(Color.TRANSPARENT);
-                    
-					hidden.setScene(scene);
-					hidden.sizeToScene();
-					hidden.setOpacity(0);
+					if(Boolean.getBoolean("twoslices.javafx.oldHiddenWindow")) {
+						if (hidden == null && Utils.getWindow(null) == null) {
+							/*
+							 * TODO not entirely convinced the stage will always be hidden. Seems to be here
+							 * on Linux Mint
+							 */
+							hidden = new Stage(StageStyle.UTILITY);
+							var text = new Text(10, 40, " ");
+							var scene = new Scene(new Group(text));
+							hidden.setScene(scene);
+							hidden.sizeToScene();
+						}
+						if (hidden != null)
+							hidden.show();
+						showNotification(type, n);	
+					}
+					else {
+						/*
+						 * TODO not entirely convinced the stage will always be hidden. Seems to be here
+						 * on Linux Mint
+						 */
+						hidden = new Stage(StageStyle.UTILITY);
+						
+						var text = new Text(10, 40, " ");
+						text.setStyle("-fx-background-color: transparent;");
+						
+						var grp = new Group(text);
+						grp.setStyle("-fx-background-color: transparent;");
+						
+	                    var scene = new Scene(grp);
+	                    scene.setFill(Color.TRANSPARENT);
+	                    
+						hidden.setScene(scene);
+						hidden.sizeToScene();
+						hidden.setOpacity(0);
+					}
 				}
 				if (hidden != null)
 					hidden.show();

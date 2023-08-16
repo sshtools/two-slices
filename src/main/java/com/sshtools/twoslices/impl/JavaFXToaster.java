@@ -233,9 +233,6 @@ public class JavaFXToaster extends AbstractToaster {
 							hidden.setScene(scene);
 							hidden.sizeToScene();
 						}
-						if (hidden != null)
-							hidden.show();
-						showNotification(type, n);	
 					}
 					else {
 						/*

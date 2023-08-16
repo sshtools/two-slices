@@ -15,6 +15,7 @@
  */
 package com.sshtools.twoslices;
 
+import java.util.Objects;
 import java.util.ServiceLoader;
 
 /**
@@ -43,12 +44,14 @@ public abstract class ToasterFactory {
 	public static class ServicesToasterFactory extends ToasterFactory {
 		private Toaster instance;
 		private Object lock = new Object();
+		private String lastPreferred;
 
 		@Override
 		public Toaster toaster() {
 			synchronized (lock) {
-				if (instance == null) {
-					var preferred = getSettings().getPreferredToasterClassName();
+				var preferred = getSettings().getPreferredToasterClassName();
+				if (instance == null || !Objects.equals(preferred, lastPreferred)) {
+					lastPreferred = preferred;
 					Toaster first = null;
 					for (var toaster : ServiceLoader.load(ToasterService.class)) {
 						try {

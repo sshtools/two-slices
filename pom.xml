@@ -55,6 +55,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	<url>https://github.com/sshtools/two-slices</url>
 	<scm>
 		<url>https://github.com/sshtools/two-slices</url>
 		<connection>https://github.com/sshtools/two-slices.git</connection>

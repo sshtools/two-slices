@@ -26,6 +26,7 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.tools.Utils;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.BasicToastHint;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
@@ -61,42 +62,62 @@ public class JavaFXToaster extends AbstractToaster {
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for a CSS stylesheet URI
 	 * to use. Should be a {@link String}.
+	 * 
+	 * Deprecated, use {@link BasicToastHint}.
 	 */
-	public final static String STYLESHEET = "stylesheet";
+	@Deprecated
+	public final static String STYLESHEET = BasicToastHint.STYLESHEET.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for a CSS stylesheet URI
 	 * to use. Should be a {@link List} of {@link String}.
+	 * 
+	 * Deprecated, use {@link BasicToastHint}.
 	 */
-	public final static String STYLESHEETS = "stylesheets";
+	@Deprecated
+	public final static String STYLESHEETS = BasicToastHint.STYLESHEETS.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for a an instance of a {@link Function<ToastType, Node>}. 
 	 * This should generate a new node for a given toast type.
+	 * 
+	 * Deprecated, use {@link BasicToastHint}.
 	 */
-	public final static String TYPE_ICON_GENERATOR = "typeIconGenerator";
+	@Deprecated
+	public final static String TYPE_ICON_GENERATOR = BasicToastHint.TYPE_ICON_GENERATOR.toLegacyKey();
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for a CSS style to use.
 	 * Should be a {@link String}.
+	 * 
+	 * Deprecated, use {@link BasicToastHint}.
 	 */
-	public final static String STYLE = "style";
+	@Deprecated
+	public final static String STYLE = BasicToastHint.STYLE.toLegacyKey();
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hinting to use dark mode.
-	 * Should be a {@link Boolean}.
+	 * 
+	 * Deprecated, use {@link BasicToastHint}.
 	 */
-	public final static String DARK = "dark";
+	@Deprecated
+	public final static String DARK = BasicToastHint.DARK.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hinting of max number of
 	 * stacked messages before they are collapsed. Should be a {@link Integer}.
+	 * 
+	 * Deprecated, use {@link BasicToastHint}.
 	 */
-	public final static String THRESHOLD = "threshold";
+	@Deprecated
+	public final static String THRESHOLD = BasicToastHint.THRESHOLD.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hinting of the text to use
 	 * for collapsed messages. Should be a {@link String}.
+	 * 
+	 * Deprecated, use {@link BasicToastHint}.
 	 */
-	public final static String COLLAPSE_MESSAGE = "collapseMessage";
+	@Deprecated
+	public final static String COLLAPSE_MESSAGE = BasicToastHint.COLLAPSE_MESSAGE.toLegacyKey();
 
 	public static class Service implements ToasterService {
 		@Override
@@ -139,7 +160,6 @@ public class JavaFXToaster extends AbstractToaster {
 		}
 
 		Stage.getWindows().addListener(new ListChangeListener<Window>() {
-			@SuppressWarnings("unchecked")
 			@Override
 			public void onChanged(Change<? extends Window> c) {
 				while (c.next()) {
@@ -150,14 +170,13 @@ public class JavaFXToaster extends AbstractToaster {
 							for (Node node : s.getRoot().getChildrenUnmodifiable()) {
 								if (node.getClass().getTypeName().startsWith(
 										"org.controlsfx.control.Notifications$NotificationPopupHandler")) {
-									String css = (String) configuration.getProperties().get(STYLESHEET);
+									String css = getHint(BasicToastHint.STYLESHEET);
 									if (css != null)
 										s.getStylesheets().add(css);
-									List<String> csss = (List<String>) configuration.getProperties()
-											.get(STYLESHEETS);
+									List<String> csss = getHint(BasicToastHint.STYLESHEETS);
 									if (csss != null)
 										s.getStylesheets().addAll(csss);
-									String style = (String) configuration.getProperties().get(STYLE);
+									String style = getHint(BasicToastHint.STYLE);
 									if (style != null)
 										s.getRoot().setStyle(style);
 									return;
@@ -180,8 +199,8 @@ public class JavaFXToaster extends AbstractToaster {
 					: Duration.seconds((builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout())));
 			n.title(builder.title());
 			n.text(builder.content());
-			n.threshold((Integer) configuration.getProperties().getOrDefault(THRESHOLD, 3),
-					Notifications.create().title((String) configuration.getProperties().getOrDefault(COLLAPSE_MESSAGE,
+			n.threshold((Integer) getHint(BasicToastHint.THRESHOLD, 3),
+					Notifications.create().title((String) getHint(builder.hints(), BasicToastHint.COLLAPSE_MESSAGE,
 							"Collapsed Notifications")));
 			List<Action> as = new ArrayList<>();
 			for (var a : builder.actions()) {
@@ -205,14 +224,16 @@ public class JavaFXToaster extends AbstractToaster {
 				n.graphic(anchorPane);
 				type = ToastType.NONE;
 			}
-			else if(configuration.getProperties().containsKey(TYPE_ICON_GENERATOR)) {
+			else  {
 				@SuppressWarnings("unchecked")
-				var typeIconGenerator = (Function<ToastType, Node>)configuration.getProperties().get(TYPE_ICON_GENERATOR);
-				n.graphic(typeIconGenerator.apply(type));
-				type = ToastType.NONE;
+				var typeIconGenerator = (Function<ToastType, Node>)getHint(builder.hints(), BasicToastHint.TYPE_ICON_GENERATOR);
+				if(typeIconGenerator != null) {
+					n.graphic(typeIconGenerator.apply(type));
+					type = ToastType.NONE;
+				}
 			}
 			n.action(as.toArray(new Action[0]));
-			if (Boolean.TRUE.equals(configuration.getProperties().get(DARK)))
+			if (Boolean.TRUE.equals(getHint(BasicToastHint.DARK)))
 				n.darkStyle();
 			n.position(calcPos());
 			n.onAction((e) -> {

@@ -31,6 +31,7 @@ import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
+import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
@@ -872,7 +873,7 @@ public class NotificationCenterToaster extends AbstractToaster {
 		super(configuration);
 		if(!Platform.isMac())
 			throw new UnsupportedOperationException();
-Version osVersion = new Version(System.getProperty("os.version"));
+		Version osVersion = new Version(System.getProperty("os.version"));
 		Version minVersion = new Version("10.8.0"); // Mountain Lion
 		if(osVersion.compareTo(minVersion) < 0) {
 			throw new UnsupportedOperationException();
@@ -889,8 +890,12 @@ Version osVersion = new Version(System.getProperty("os.version"));
 	@Override
 	public Slice toast(ToastBuilder builder) {
 		var notification = Foundation.invoke(Foundation.getObjcClass("NSUserNotification"), "new");
-		Foundation.invoke(notification, "setTitle:",
-				Foundation.nsString(StringUtil.stripHtml(builder.type().name() + "." + builder.title(), true).replace("%", "%%")));
+		if(builder.type() == ToastType.NONE)
+			Foundation.invoke(notification, "setTitle:",
+					Foundation.nsString(StringUtil.stripHtml(builder.title(), true).replace("%", "%%")));
+		else
+			Foundation.invoke(notification, "setTitle:",
+					Foundation.nsString(StringUtil.stripHtml(builder.type().name() + "." + builder.title(), true).replace("%", "%%")));
 		Foundation.invoke(notification, "setInformativeText:",
 				Foundation.nsString(StringUtil.stripHtml(builder.content(), true).replace("%", "%%")));
 		

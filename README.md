@@ -85,7 +85,7 @@ build system you use. For example, for Maven itself :-
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>two-slices</artifactId>
-			<version>0.9.0-SNAPSHOT</version>
+			<version>0.9.1</version>
 		</dependency>
 	</dependencies>
 ```
@@ -172,14 +172,20 @@ toasters can ignore any and all of them.
 ToasterFactory.setSettings(new ToasterSettings().setAppName("My App Name"));
 ```
 
-Some toaster implementations have additional hints that can be passed. For example, to resize icons or images in the SWT implementation, you
-would do the following.
+Some toaster implementations have additional hints that can be passed. These hints are only
+generally only supported by individual toolkits. For example, to resize icons or images in 
+the SWT implementation, you would do the following.
 
 ```java
 ToasterSettings settings = new ToasterSettings();
-settings.getProperties().put(SWTToaster.ICON_SIZE, 64);
+settings.getHints().put(BasicToastHint.ICON_SIZE, 64);
 ToasterFactory.setSettings(settings);
 ```
+
+`BasicToastHint` contains a generic list of hints that a provider may or may not support. See
+the class documentation for more detail.
+
+Hints may also be set on individual toast, see `ToastBuilder.hints()`. 
 
 ### The Tray Icon Mode
 

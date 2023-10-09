@@ -27,7 +27,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sshtools</groupId>
 	<artifactId>two-slices</artifactId>
-	<version>0.9.1-SNAPSHOT</version>
+	<version>0.9.1</version>
 	<name>Native Popups</name>
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -125,11 +125,7 @@
 			</dependency> -->
 
 	</dependencies>
-	<description>Simple library to display desktop notifications appropriate for the platform. Currently supports :-
-
-Linux (library dbus-java or command notify-send must be available)
-Mac OS X (Growl)
-All other platforms (AWT)</description>
+	<description>Simple library to display desktop notifications appropriate for the platform.</description>
 	<build>
 		<pluginManagement>
 			<plugins>

@@ -18,7 +18,9 @@ package com.sshtools.twoslices;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Preferred method to create a new toaster notification. Use
@@ -140,12 +142,13 @@ public class ToastBuilder {
 	private String title;
 	private String content;
 	private String icon;
-	private List<ToastAction> actions = new ArrayList<>();
+	private final List<ToastAction> actions = new ArrayList<>();
 	private ToastAction defaultAction;
 	private Toaster toaster;
 	private int timeout = -1;
 	private String image;
 	private ToastActionListener closed;
+	private final Map<ToastHint, Object> hints = new HashMap<>();
 	
 	/**
 	 * Reset everything except the toaster so builder can be re-used easily.
@@ -343,6 +346,17 @@ public class ToastBuilder {
 	}
 
 	/**
+	 * Set a hint for this toast.
+	 * 
+	 * @param hint hint
+	 * @return this for chaining
+	 */
+	public ToastBuilder hint(ToastHint hint, Object value) {
+		this.hints.put(hint, value);
+		return this;
+	}
+
+	/**
 	 * Get the default action
 	 * 
 	 * @return action
@@ -358,6 +372,15 @@ public class ToastBuilder {
 	 */
 	public List<ToastAction> actions() {
 		return Collections.unmodifiableList(actions);
+	}
+
+	/**
+	 * Get an unmodifiable map of all hints.
+	 * 
+	 * @return hints
+	 */
+	public Map<ToastHint, Object> hints() {
+		return Collections.unmodifiableMap(hints);
 	}
 
 	/**

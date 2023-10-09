@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.BasicToastHint;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastActionListener;
@@ -65,8 +66,11 @@ public class SWTToaster extends AbstractToaster {
 	 * Key for {@link ToasterSettings#getProperties()} hint for an offset between
 	 * the edge of the screen (as decided by the {@Position}. Should be an
 	 * {@link Integer}.
+	 * 
+	 * Deprecated. See {@link BasicToastHint}
 	 */
-	public final static String OFFSET = "offset";
+	@Deprecated
+	public final static String OFFSET = BasicToastHint.OFFSET.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for the maximum size of
@@ -74,6 +78,7 @@ public class SWTToaster extends AbstractToaster {
 	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}. Use a size of
 	 * zero to prevent scaling entirely.
 	 */
+	@Deprecated
 	public final static String IMAGE_SIZE = "imageSize";
 
 	/**

@@ -19,12 +19,13 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractToaster implements Toaster {
 	
 	protected ToasterSettings configuration;
-	protected Set<Capability> capabilities = new LinkedHashSet<>();
+	protected final Set<Capability> capabilities = new LinkedHashSet<>();
 
 	protected AbstractToaster(ToasterSettings configuration) {
 		this.configuration = configuration;
@@ -33,6 +34,40 @@ public abstract class AbstractToaster implements Toaster {
 	@Override
 	public final Set<Capability> capabilities() {
 		return Collections.unmodifiableSet(capabilities);
+	}
+
+	protected <V> V getHint(ToastHint key) {
+		return getHint(Collections.emptyMap(), key);
+	}
+
+	protected <V> V getHint(ToastHint key, V defaultValue) {
+		return getHint(Collections.emptyMap(), key, defaultValue);
+	}
+	
+	protected <V> V getHint(Map<ToastHint, Object> hints, ToastHint key) {
+		return getHint(hints, key, null);
+	}
+	
+	/**
+	 * Get the value of a hint. 
+	 * 
+	 * @param <V> type
+	 * @param key key
+	 * @param defaultValue default value
+	 * @return value
+	 */
+	@SuppressWarnings("unchecked")
+	protected <V> V getHint(Map<ToastHint, Object> hints, ToastHint hint, V defaultValue) {
+		if(hints.containsKey(hint)) {
+			return (V)hints.get(hint);
+		}
+		if(configuration.getHints().containsKey(hint)) {
+			return (V)configuration.getHints().get(hint);
+		}
+		if(configuration.getProperties().containsKey(hint)) {
+			return (V)configuration.getProperties().get(hint);			
+		}
+		return defaultValue;
 	}
 	
 	protected static String ensureURL(String pathOrURL) {

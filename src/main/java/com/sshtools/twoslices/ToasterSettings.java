@@ -41,8 +41,10 @@ public class ToasterSettings {
 	private URL defaultImage;
 	private SystemTrayIconMode systemTrayIconMode = SystemTrayIconMode.SHOW_DEFAULT_WHEN_ACTIVE;
 	private Position position;
-	private Map<String, Object> properties = new HashMap<>();
+	private Map<ToastHint, Object> hints = new HashMap<>();
 	private String preferredToasterClassName = System.getProperty("twoslices.preferred");
+	@Deprecated
+	private Map<String, Object> properties = new HashMap<>();
 
 	public ToasterSettings() {
 		try {
@@ -85,10 +87,24 @@ public class ToasterSettings {
 	 * Get the generic properties. These are used to pass toaster specific
 	 * configuration.
 	 * 
+	 * Deprecated. Use {@#getHints()}.
+	 * 
 	 * @return properties
 	 */
+	@Deprecated
 	public Map<String, Object> getProperties() {
 		return properties;
+	}
+
+	/**
+	 * Get the generic hints. These are used to pass toaster specific
+	 * configuration.You can also pass hints additional hints in individual
+	 * toast. Those will override any hints here.
+	 * 
+	 * @return hints
+	 */
+	public Map<ToastHint, Object> getHints() {
+		return hints;
 	}
 
 	/**

@@ -16,7 +16,7 @@
 package com.sshtools.twoslices;
 
 /**
- * Default entry point providing two simple methods for displaying a
+ * Default entry point providing a number of simple methods for displaying a
  * notification message. For more control over the notification system used,
  * consider using {@link ToasterFactory} directly.
  *

@@ -133,7 +133,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -155,11 +155,11 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.3.0</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.6.0</version>
 					<executions>
 						<execution>
 							<id>javadoc-jar</id>
@@ -341,35 +341,6 @@
 				</dependency>
 			</dependencies>
 		</profile>
-		<profile>
-			<id>modern-javadoc</id>
-			<activation>
-				<jdk>[9,)</jdk>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-javadoc-plugin</artifactId>
-							<configuration>
-								<!-- TODO temp disabled -->
-								<skip>true</skip>
-
-								<!-- TODO: Why is this STILL broken! -->
-								<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-								<sourceFileExcludes>
-									<sourceFileExclude>com/sshtools/twoslices/impl/NotificationCenterToaster.java</sourceFileExclude>
-								</sourceFileExcludes>
-								<!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
-								<detectJavaApiLink>false</detectJavaApiLink>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
-
 		<profile>
 			<id>release-sign-artifacts</id>
 			<activation>

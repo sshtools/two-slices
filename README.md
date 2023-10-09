@@ -75,32 +75,32 @@ build system you use. For example, for Maven itself :-
 
 ### Snapshots
 
-*Development builds may be available in the snapshots repository *
+*Development builds may be available in the snapshots repository*
 
 ```xml
 
-	<repositories>
-		<repository>
-			<id>oss-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-	</repositories>
+<repositories>
+	<repository>
+		<id>oss-snapshots</id>
+		<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		<snapshots>
+			<enabled>true</enabled>
+		</snapshots>
+		<releases>
+			<enabled>false</enabled>
+		</releases>
+	</repository>
+</repositories>
 	
 ..
 
-	<dependencies>
-		<dependency>
-			<groupId>com.sshtools</groupId>
-			<artifactId>two-slices</artifactId>
-			<version>0.9.2-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
+<dependencies>
+	<dependency>
+		<groupId>com.sshtools</groupId>
+		<artifactId>two-slices</artifactId>
+		<version>0.9.2-SNAPSHOT</version>
+	</dependency>
+</dependencies>
 ```
 
 ## Showing A Message

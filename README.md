@@ -1,4 +1,8 @@
 # two-slices
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.sshtools/uhttpd/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.sshtools/uhttpd)
+[![javadoc](https://javadoc.io/badge2/com.sshtools/uhttpd/javadoc.svg)](https://javadoc.io/doc/com.sshtools/uhttpd)
+![JPMS](https://img.shields.io/badge/JPMS-com.sshtools.uhttpd-purple) 
+
 Simple library for desktop notifications from Java on Windows, Mac OS X and Linux.
  
  * One-line of code to show a notification for most cases.
@@ -59,11 +63,21 @@ Linux support will be provided in the following order :-
 The library is available in Maven Central, so configure your project according to the
 build system you use. For example, for Maven itself :-
 
-*Note, currently only available on Snapshots repository so you'll need to add that first until full release*
+```xml
+	<dependencies>
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>two-slices</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+	</dependencies>
+```
+
+### Snapshots
+
+*Development builds may be available in the snapshots repository *
 
 ```xml
-
-..
 
 	<repositories>
 		<repository>
@@ -80,12 +94,11 @@ build system you use. For example, for Maven itself :-
 	
 ..
 
-
 	<dependencies>
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>two-slices</artifactId>
-			<version>0.9.1</version>
+			<version>0.9.2-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 ```

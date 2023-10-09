@@ -1,7 +1,7 @@
 # two-slices
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.sshtools/two-slices/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.sshtools/two-slices)
 [![javadoc](https://javadoc.io/badge2/com.sshtools/two-slices/javadoc.svg)](https://javadoc.io/doc/com.sshtools/two-slices)
-![JPMS](https://img.shields.io/badge/JPMS-com.sshtools.two--slices-purple) 
+![JPMS](https://img.shields.io/badge/JPMS-com.sshtools.twoslices-purple) 
 
 Simple library for desktop notifications from Java on Windows, Mac OS X and Linux.
  

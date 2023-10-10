@@ -15,7 +15,7 @@ Simple library for desktop notifications from Java on Windows, Mac OS X and Linu
 
 ## All Platforms
 
-All platforms support Growls GNTP protocol. If you have have Growl for Mac OS X, Linux or Windows installed, running on listening on the default port, it will be used in preference to all platform specific notification systems.
+All platforms support Growls GNTP protocol. If you have have Growl for Mac OS X, Linux or Windows installed, and it is listening on the default port, it will be used in preference to all platform specific notification systems.
 
 All platforms can use one of the Java GUI toolkit specific implementations, such as JavaFX or SWT. If these toolkit libraries are available, those will be chosen if the experience is superior to the native implementation. 
 
@@ -285,7 +285,7 @@ For Java to automatically find this service, you must add it's full class name, 
 
 ### Installing Your Own Factory
 
-If you do not wish to use Java's `ServiceLoader` feature to locate toaster implementations, you can extend `ToasterFactory`, providing you own `toaster()` method.  This will be registered as the default factory the first time you instantiate it (so make sure you do this before ever asking for toast) :-
+If you do not wish to use Java's `ServiceLoader` feature to locate toaster implementations, you can extend `ToasterFactory` and provide your own `toaster()` method.  This will be registered as the default factory the first time you instantiate it (so make sure you do this before ever asking for toast) :-
 
 ```java
 new ToasterFactory() {

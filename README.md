@@ -9,7 +9,7 @@ Simple library for desktop notifications from Java on Windows, Mac OS X and Linu
  * Tries to find the best implementation available to give the best looking and most integrated experience..
  * No hard dependencies, although can be augmented with AWT, Swing, SWT or JavaFX to provide further options.
  * Supports NONE, INFO, ERROR and WARNING notifications types, each with it's own icon.
- * Depending on provider, can supports custom icons, images and actions.
+ * Depending on provider, can support custom icons, images and actions.
  * Can integrate with your existing system tray icon if required (SWT and Swing/AWT)
  * Cross platform and custom JavaFX and SWT popup notifications included.
 

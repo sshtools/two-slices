@@ -203,7 +203,7 @@ Hints may also be set on individual toast, see `ToastBuilder.hints()`.
 ### The Tray Icon Mode
 
 Some implementations will require and/or show an icon in your system tray. This will be where the notification
-messages are anchored too. You can set a hint as to how to treat this icon via the configuration.
+messages are anchored to. You can set a hint as to how to treat this icon via the configuration.
 
 ```java
 ToasterSettings settings = new ToasterSettings();

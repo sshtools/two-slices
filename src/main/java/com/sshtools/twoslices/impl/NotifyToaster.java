@@ -87,16 +87,18 @@ public class NotifyToaster extends AbstractToaster {
 		}
 		args.add("-t");
 		args.add(String.valueOf((builder.timeout() == -1 ? configuration.getTimeout() : builder.timeout() ) * 1000));
-		args.add(builder.title());
+		var title = builder.title();
+		if(title != null)
+			args.add(title);
 		args.add(builder.content());
 		try {
 			Process p = new ProcessBuilder(args).redirectErrorStream(true).start();
 			while ((p.getInputStream().read()) != -1)
 				;
 			if (p.waitFor() != 0)
-				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, builder.title()));
+				throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title));
 		} catch (IOException | InterruptedException ioe) {
-			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, builder.title()), ioe);
+			throw new ToasterException(String.format("Failed to show toast for %s: %s", type, title), ioe);
 		}
 		return Slice.defaultSlice();
 	}

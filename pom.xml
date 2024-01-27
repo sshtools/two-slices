@@ -456,6 +456,33 @@
 				</dependency>
 			</dependencies>
 		</profile>
+		<profile>
+			<id>linuxaarch64-toaster</id>
+			<activation>
+				<os>
+					<family>linux</family>
+					<arch>aarch64</arch>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<optional>true</optional>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId>
+					<version>3.119.0</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.eclipse.platform</groupId>
+							<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.eclipse.platform</groupId>
+							<artifactId>org.eclipse.swt.gtk.linux.arm</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+			</dependencies>
+		</profile>
 	</profiles>
 
 </project>

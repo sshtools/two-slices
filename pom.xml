@@ -15,20 +15,13 @@
     limitations under the License.
 
 -->
-<!-- Copyright © 2018 SSHTOOLS Limited (support@sshtools.com) Licensed under 
-	the Apache License, Version 2.0 (the "License"); you may not use this file 
-	except in compliance with the License. You may obtain a copy of the License 
-	at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable 
-	law or agreed to in writing, software distributed under the License is distributed 
-	on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
-	express or implied. See the License for the specific language governing permissions 
-	and limitations under the License. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sshtools</groupId>
-	<artifactId>two-slices</artifactId>
-	<version>0.9.3-SNAPSHOT</version>
+	<artifactId>two-slices-group</artifactId>
+	<version>0.9.3</version>
 	<name>Native Popups</name>
+	<packaging>pom</packaging>
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
@@ -70,58 +63,10 @@
 			<email>brett@javassh.com</email>
 		</developer>
 	</developers>
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.github.hypfvieh</groupId>
-			<artifactId>dbus-java-core</artifactId>
-			<version>${dbus.version}</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.controlsfx</groupId>
-			<artifactId>controlsfx</artifactId>
-			<version>11.1.1</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-controls</artifactId>
-			<version>${javafx.version}</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.testfx</groupId>
-			<artifactId>testfx-junit</artifactId>
-			<version>4.0.15-alpha</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
-			<version>5.10.0</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>uk.co.bithatch</groupId>
-			<artifactId>native-image-annotations</artifactId>
-			<version>0.0.1</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- <dependency> <groupId>org.eclipse.platform</groupId> <artifactId>org.eclipse.swt</artifactId> 
-			<version>3.115.0</version> <exclusions> <exclusion> <groupId>org.eclipse.platform</groupId> 
-			<artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId> </exclusion> </exclusions> 
-			</dependency> -->
-
-	</dependencies>
+    <modules>
+        <module>lib</module>
+        <module>swt</module>
+    </modules>
 	<description>Simple library to display desktop notifications appropriate for the platform.</description>
 	<build>
 		<pluginManagement>
@@ -140,18 +85,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.10.1</version>
-					<configuration>
-						<compilerArgs>
-							<!--
-							<compilerArg>XXadd-exports</compilerArg>
-							<compilerArg>org.eclipse.swt.gtk.linux.x86_64/org.eclipse.swt=ALL-UNNAMED</compilerArg>
-							<compilerArg>XXadd-reads</compilerArg>
-							<compilerArg>org.eclipse.swt.gtk.linux.x86_64=ALL-UNNAMED</compilerArg>
-							-->
-							<compilerArg>--patch-module</compilerArg>
-							<compilerArg>org.eclipse.swt.gtk.linux.x86_64=com.sshtools.twoslices</compilerArg>
-						</compilerArgs>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -244,7 +177,7 @@
 							<goal>read-project-properties</goal>
 						</goals>
 						<configuration>
-							<quiet>false</quiet>
+							<quiet>true</quiet>
 							<files>
 								<file>${build.projectProperties}</file>
 								<file>${build.userProperties}</file>
@@ -268,27 +201,6 @@
 							<sources>
 								<source>src/main/another-src</source>
 							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>package-swt-linux-x86_64</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<classifier>linux-64</classifier>
-							<includes>
-								<include>**/*</include>
-							</includes>
 						</configuration>
 					</execution>
 				</executions>
@@ -329,39 +241,20 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
-		<profile>
-			<id>pre-jdk-16-unix-sockets</id>
-			<activation>
-				<jdk>[,16)</jdk>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>com.github.hypfvieh</groupId>
-					<artifactId>dbus-java-transport-jnr-unixsocket</artifactId>
-					<version>${dbus.version}</version>
-					<optional>true</optional>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>post-jdk-16-unix-sockets</id>
-			<activation>
-				<jdk>[16,)</jdk>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>com.github.hypfvieh</groupId>
-					<artifactId>dbus-java-transport-native-unixsocket</artifactId>
-					<version>${dbus.version}</version>
-					<optional>true</optional>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
 		<profile>
 			<id>release-sign-artifacts</id>
 			<activation>
@@ -397,132 +290,6 @@
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
-		<profile>
-			<id>mac-toaster</id>
-			<activation>
-				<os>
-					<family>mac</family>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<optional>true</optional>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
-					<version>3.119.0</version>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>win32-toaster</id>
-			<activation>
-				<os>
-					<family>windows</family>
-					<arch>x86</arch>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<optional>true</optional>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.swt.win32.win32.x86</artifactId>
-					<version>3.119.0</version>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>win64-toaster</id>
-			<activation>
-				<os>
-					<family>windows</family>
-					<arch>amd64</arch>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<optional>true</optional>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-					<version>3.119.0</version>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>linux64-toaster</id>
-			<activation>
-				<os>
-					<family>linux</family>
-					<arch>amd64</arch>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<optional>true</optional>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-					<version>3.119.0</version>
-					<exclusions>
-						<exclusion>
-							<groupId>org.eclipse.platform</groupId>
-							<artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.eclipse.platform</groupId>
-							<artifactId>org.eclipse.swt.gtk.linux.arm</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>
-			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<configuration>
-							<compilerArgs>
-								<compilerArg>--add-modules</compilerArg>
-								<compilerArg>org.eclipse.swt.gtk.linux.x86_64/org.eclipse.swt</compilerArg>
-								<!--
-								<compilerArg>XXadd-exports</compilerArg>
-								<compilerArg>org.eclipse.swt.gtk.linux.x86_64/org.eclipse.swt=ALL-UNNAMED</compilerArg>
-								<compilerArg>XXadd-reads</compilerArg>
-								<compilerArg>org.eclipse.swt.gtk.linux.x86_64=ALL-UNNAMED</compilerArg>
-								<compilerArg>XXpatch-module</compilerArg>
-								<compilerArg>org.eclipse.swt.gtk.linux.x86_64=com.sshtools.twoslices</compilerArg>
-								-->
-							</compilerArgs>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>linuxaarch64-toaster</id>
-			<activation>
-				<os>
-					<family>linux</family>
-					<arch>aarch64</arch>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<optional>true</optional>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId>
-					<version>3.119.0</version>
-					<exclusions>
-						<exclusion>
-							<groupId>org.eclipse.platform</groupId>
-							<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.eclipse.platform</groupId>
-							<artifactId>org.eclipse.swt.gtk.linux.arm</artifactId>
-						</exclusion>
-					</exclusions>
-				</dependency>
-			</dependencies>
 		</profile>
 	</profiles>
 

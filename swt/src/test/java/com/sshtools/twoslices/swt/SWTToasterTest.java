@@ -13,21 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.twoslices;
+package com.sshtools.twoslices.swt;
 
 import org.eclipse.swt.widgets.Display;
 import org.junit.Test;
 
-import com.sshtools.twoslices.impl.BasicSWTToaster;
+import com.sshtools.twoslices.AbstractToasterTest;
+import com.sshtools.twoslices.ToasterSettings;
 
-public class BasicSWTToasterTest extends AbstractToasterTest {
+public class SWTToasterTest extends AbstractToasterTest {
 	@Test
 	public void testSWT() {
 		var display = Display.getDefault();
 		new Thread() {
 			public void run() {
 				try {
-					testToaster(new BasicSWTToaster(new ToasterSettings()));
+					var settings = new ToasterSettings();
+					testToaster(new SWTToaster(settings));
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					display.asyncExec(() -> display.dispose());
+				}
+			}
+		}.start();
+		while (!display.isDisposed()) {
+			if (!display.readAndDispatch())
+				display.sleep();
+		}
+	}
+	
+	@Test
+	public void testSWTScaledIcons() {
+		var display = Display.getDefault();
+		new Thread() {
+			public void run() {
+				try {
+					var settings = new ToasterSettings();
+					settings.getProperties().put(SWTToaster.ICON_SIZE, 64);
+					settings.getProperties().put(SWTToaster.IMAGE_SIZE, 512);
+					testToaster(new SWTToaster(settings));
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {

@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.sshtools.twoslices.impl.JavaFXToaster;
 import com.sshtools.twoslices.impl.NotificationCenterToaster;
-import com.sshtools.twoslices.impl.SWTToaster;
 
 /**
  * Hints can provide addition configuration to specific toaster implementations.
@@ -62,7 +61,7 @@ public enum BasicToastHint implements ToastHint {
 
 	/**
 	 * Key for hint for an offset between the edge of the screen (as decided by the
-	 * {@Position}. Should be an {@link Integer}. Supported by {@link SWTToaster}.
+	 * {@Position}. Should be an {@link Integer}. Supported by SWT.
 	 */
 	OFFSET,
 
@@ -70,7 +69,7 @@ public enum BasicToastHint implements ToastHint {
 	 * Key for hint for the maximum size of image content. Should be an
 	 * {@link Integer}. Any size lower than this will be also be scaled up depending
 	 * on {@link SWTToaster#SCALE_UP}. Use a size of zero to prevent scaling
-	 * entirely. Supported by {@link SWTToaster}. Supported by {@link SWTToaster}.
+	 * entirely. Supported by SWT.
 	 */
 	IMAGE_SIZE,
 
@@ -78,20 +77,19 @@ public enum BasicToastHint implements ToastHint {
 	 * Key for hint for the maximum size of the icon. Should be an {@link Integer}.
 	 * Any size lower than this will be also be scaled up depending on
 	 * {@link SWTToaster#SCALE_UP}. Use a size of zero to prevent scaling entirely.
-	 * Supported by {@link SWTToaster}.
+	 * Supported by SWT.
 	 */
 	ICON_SIZE,
 
 	/**
 	 * Key for hint to use animated window positioning. This is experimental, as
-	 * there are some issues. Supported by {@link SWTToaster}.
+	 * there are some issues. Supported by SWT.
 	 */
 	ANIMATED,
 
 	/**
 	 * Key for hint to signal which monitor to use. Should be an {@link Integer}.
-	 * Use -1 to indicate the primary monitor (the default). Supported by
-	 * {@link SWTToaster}.
+	 * Use -1 to indicate the primary monitor (the default). Supported by SWT.
 	 */
 	MONITOR;
 

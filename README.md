@@ -68,7 +68,7 @@ build system you use. For example, for Maven itself :-
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>two-slices</artifactId>
-			<version>0.9.1</version>
+			<version>0.9.3</version>
 		</dependency>
 	</dependencies>
 ```
@@ -98,9 +98,34 @@ build system you use. For example, for Maven itself :-
 	<dependency>
 		<groupId>com.sshtools</groupId>
 		<artifactId>two-slices</artifactId>
-		<version>0.9.2-SNAPSHOT</version>
+		<version>0.9.3-SNAPSHOT</version>
 	</dependency>
 </dependencies>
+```
+
+### SWT Support
+
+At time of writing this, the SWT artifacts that are available on Maven Central are
+incompatible with having a cross-platform and fully JPMS compliant library or application.
+This is due to the module naming scheme chosen by the SWT packagers.
+
+Two Slices is fully JPMS compliant otherwise, and including SWT as in the primary artifact
+would degrade this support. 
+
+For this reason, if you wish to use SWT you must also add the separate SWT artifact. 
+This is *not* modular, other than having an `Automatic-Module-Name`. If you are using
+SWT, you probably do not care about this as you'll have other problems with JPMS
+anyway.
+
+   
+```xml
+	<dependencies>
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>two-slices-swt</artifactId>
+			<version>0.9.3</version>
+		</dependency>
+	</dependencies>
 ```
 
 ## Showing A Message

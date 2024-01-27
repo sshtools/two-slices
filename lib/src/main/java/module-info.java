@@ -22,18 +22,6 @@ module com.sshtools.twoslices {
 	requires static java.scripting;
 	requires static org.freedesktop.dbus;
 
-	/*
-	 * TODO This is going to be tricky. SWT Maven artifact naming just is not
-	 * compatible with JPMS. I think the only way to solve this is to split the SWT
-	 * implementation into multiple modules. This would be annoying, as two-slices
-	 * was supposed to be a simple single library.
-	 * 
-	 * While it seems we can add multiple modules here, any attempt to actually use
-	 * them results in compiler errors.
-	 */
-	requires static org.eclipse.swt;
-	requires static org.eclipse.swt.gtk.linux.x86_64;
-
 	requires static javafx.controls;
 	requires static javafx.graphics;
 	requires static org.controlsfx.controls;
@@ -49,10 +37,8 @@ module com.sshtools.twoslices {
 			com.sshtools.twoslices.impl.DBUSNotifyToaster.Service,
 			com.sshtools.twoslices.impl.NotifyToaster.Service,
 			com.sshtools.twoslices.impl.JavaFXToaster.Service,
-			com.sshtools.twoslices.impl.SWTToaster.Service,
 			com.sshtools.twoslices.impl.NotificationCenterToaster.Service,
 			com.sshtools.twoslices.impl.OsXToaster.Service,  
-			com.sshtools.twoslices.impl.BasicSWTToaster.Service,
 			com.sshtools.twoslices.impl.AWTToaster.Service,
 			com.sshtools.twoslices.impl.SysOutToaster.Service;
 }

@@ -64,8 +64,8 @@ public abstract class AbstractToaster implements Toaster {
 		if(configuration.getHints().containsKey(hint)) {
 			return (V)configuration.getHints().get(hint);
 		}
-		if(configuration.getProperties().containsKey(hint)) {
-			return (V)configuration.getProperties().get(hint);			
+		if(configuration.getProperties().containsKey(hint.toLegacyKey())) {
+			return (V)configuration.getProperties().get(hint.toLegacyKey());			
 		}
 		return defaultValue;
 	}

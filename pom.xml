@@ -474,6 +474,28 @@
 					</exclusions>
 				</dependency>
 			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<compilerArgs>
+								<compilerArg>--add-modules</compilerArg>
+								<compilerArg>org.eclipse.swt.gtk.linux.x86_64/org.eclipse.swt</compilerArg>
+								<!--
+								<compilerArg>XXadd-exports</compilerArg>
+								<compilerArg>org.eclipse.swt.gtk.linux.x86_64/org.eclipse.swt=ALL-UNNAMED</compilerArg>
+								<compilerArg>XXadd-reads</compilerArg>
+								<compilerArg>org.eclipse.swt.gtk.linux.x86_64=ALL-UNNAMED</compilerArg>
+								<compilerArg>XXpatch-module</compilerArg>
+								<compilerArg>org.eclipse.swt.gtk.linux.x86_64=com.sshtools.twoslices</compilerArg>
+								-->
+							</compilerArgs>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<id>linuxaarch64-toaster</id>

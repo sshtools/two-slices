@@ -77,30 +77,41 @@ public class SWTToaster extends AbstractToaster {
 	 * image content. Should be an {@link Integer}. Any size lower than this will be
 	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}. Use a size of
 	 * zero to prevent scaling entirely.
+	 * 
+	 * Deprecated. Use {@link BasicToastHint#IMAGE_SIZE}.
 	 */
 	@Deprecated
-	public final static String IMAGE_SIZE = "imageSize";
+	public final static String IMAGE_SIZE = BasicToastHint.IMAGE_SIZE.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint for the maximum size of
 	 * the icon. Should be an {@link Integer}. Any size lower than this will be
 	 * also be scaled up depending on {@link SWTToaster#SCALE_UP}. Use a size of
 	 * zero to prevent scaling entirely.
+	 * 
+	 * Deprecated. Use {@link BasicToastHint#ICON_SIZE}.
 	 */
-	public final static String ICON_SIZE = "iconSize";
+	@Deprecated
+	public final static String ICON_SIZE = BasicToastHint.ICON_SIZE.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint to use animated window
 	 * positioning. This is experimental, as there are some issues.
+	 * 
+	 * Deprecated. Use {@link BasicToastHint#ANIMATED}.
 	 */
-	public final static String ANIMATED = "animated";
+	@Deprecated
+	public final static String ANIMATED = BasicToastHint.ANIMATED.toLegacyKey();
 
 	/**
 	 * Key for {@link ToasterSettings#getProperties()} hint to signal which monitor
 	 * to use. Should be an {@link Integer}. Use -1 to indicate the primary monitor
 	 * (the default)
+	 * 
+	 * Deprecated. Use {@link BasicToastHint#MONITOR}.
 	 */
-	public final static String MONITOR = "monitor";
+	@Deprecated
+	public final static String MONITOR = BasicToastHint.MONITOR.toLegacyKey();
 
 	public static class Service implements ToasterService {
 		@Override
@@ -131,7 +142,12 @@ public class SWTToaster extends AbstractToaster {
 
 	@Override
 	public Slice toast(ToastBuilder builder) {
-		var newSlice = new PopupWindow(display, builder, configuration);
+		var iconSize =  getHint(builder.hints(), BasicToastHint.ICON_SIZE, PopupWindow.ICON_SIZE);
+		var imageSize =  getHint(builder.hints(), BasicToastHint.IMAGE_SIZE, PopupWindow.IMAGE_SIZE);
+		var offset =  getHint(builder.hints(), BasicToastHint.OFFSET, PopupWindow.DEFAULT_OFFSET);
+		var animated = (boolean) getHint(builder.hints(), BasicToastHint.ANIMATED, false);
+		var idx =  getHint(builder.hints(), BasicToastHint.MONITOR, -1);
+		var newSlice = new PopupWindow(display, builder, configuration, offset, iconSize, imageSize, animated, idx);
 		display.asyncExec(() -> {
 			if (hidden == null)
 				hidden = new Shell(display);
@@ -176,10 +192,20 @@ public class SWTToaster extends AbstractToaster {
 		private final List<ToastAction> actions;
 		private final ToastActionListener closed;
 		private final int timeout;
+		private final int offset;
+		private final int iconSize;
+		private final int imageSize;
+		private final boolean animated;
+		private final int monitor;
 
-		public PopupWindow(Display display, ToastBuilder builder, ToasterSettings settings) {
+		public PopupWindow(Display display, ToastBuilder builder, ToasterSettings settings, int offset, int iconSize, int imageSize, boolean animated, int monitor) {
 			this.settings = settings;
 			this.display = display;
+			this.offset = offset;
+			this.iconSize = iconSize;
+			this.imageSize = imageSize;
+			this.animated = animated;
+			this.monitor = monitor;
 			
 			defaultAction = builder.defaultAction();
 			icon = builder.icon();
@@ -238,7 +264,6 @@ public class SWTToaster extends AbstractToaster {
 					image = new Image(display, icon);
 				}
 
-				var iconSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE);
 				if(iconSize > 0)
 					image = proportionalImage(iconSize, image);
 				var fImage = image;
@@ -255,7 +280,6 @@ public class SWTToaster extends AbstractToaster {
 				data.heightHint = 24;
 				iconLabel.setLayoutData(data);
 				var img = getTypeImage(type);
-				var iconSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.ICON_SIZE, ICON_SIZE);
 				if(iconSize > 0)
 					img  = getScaledImage(img, iconSize);
 				var fImage = img;
@@ -308,7 +332,6 @@ public class SWTToaster extends AbstractToaster {
 					imageObj = new Image(display, image);
 				}
 				
-				var imageSize = (Integer) settings.getProperties().getOrDefault(SWTToaster.IMAGE_SIZE, IMAGE_SIZE);
 				if(imageSize > 0)
 					imageObj = proportionalImage(imageSize, imageObj);
 				imageLabel.setImage(imageObj);
@@ -418,7 +441,7 @@ public class SWTToaster extends AbstractToaster {
 		}
 
 		private void show() {
-			if ((boolean) settings.getProperties().getOrDefault(SWTToaster.ANIMATED, false)) {
+			if (animated) {
 				animStarted = System.currentTimeMillis();
 				startPosition = from();
 				shell.setLocation(startPosition);
@@ -449,7 +472,6 @@ public class SWTToaster extends AbstractToaster {
 
 		private Point from() {
 			var bounds = getMonitorBounds();
-			var offset = (Integer) settings.getProperties().getOrDefault(SWTToaster.OFFSET, DEFAULT_OFFSET);
 			var sz = shell.getSize();
 			switch (calcPos()) {
 			case TR:
@@ -475,17 +497,15 @@ public class SWTToaster extends AbstractToaster {
 		}
 
 		private Rectangle getMonitorBounds() {
-			var idx = (Integer) settings.getProperties().getOrDefault(SWTToaster.MONITOR, -1);
 			var mon = display.getPrimaryMonitor();
-			if (idx != -1 && idx < display.getMonitors().length) {
-				mon = display.getMonitors()[idx];
+			if (monitor != -1 && monitor < display.getMonitors().length) {
+				mon = display.getMonitors()[monitor];
 			}
 			return mon.getBounds();
 		}
 
 		private Point to() {
 			var bounds = getMonitorBounds();
-			var offset = (Integer) settings.getProperties().getOrDefault(SWTToaster.OFFSET, DEFAULT_OFFSET);
 			var sz = shell.getSize();
 			switch (calcPos()) {
 			case TR:

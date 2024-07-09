@@ -19,7 +19,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sshtools</groupId>
 	<artifactId>two-slices-group</artifactId>
-	<version>0.9.4</version>
+    <version>0.9.5-SNAPSHOT</version>
 	<name>Native Popups</name>
 	<packaging>pom</packaging>
 	<properties>

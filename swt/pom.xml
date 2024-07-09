@@ -20,7 +20,7 @@
     <parent>
 	    <groupId>com.sshtools</groupId>
 	    <artifactId>two-slices-group</artifactId>
-	    <version>0.9.4-SNAPSHOT</version>
+	    <version>0.9.4</version>
 	    <relativePath>../</relativePath>
     </parent>
     <artifactId>two-slices-swt</artifactId>

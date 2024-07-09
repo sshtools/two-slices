@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.sshtools.twoslices.AbstractToaster;
+import com.sshtools.twoslices.BasicToastHint;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastBuilder;
@@ -890,7 +891,7 @@ public class NotificationCenterToaster extends AbstractToaster {
 	@Override
 	public Slice toast(ToastBuilder builder) {
 		var notification = Foundation.invoke(Foundation.getObjcClass("NSUserNotification"), "new");
-		if(builder.type() == ToastType.NONE)
+		if(Boolean.TRUE.equals(builder.hints().get(BasicToastHint.NO_TYPE_IN_TEXT)) || builder.type() == ToastType.NONE)
 			Foundation.invoke(notification, "setTitle:",
 					Foundation.nsString(StringUtil.stripHtml(builder.title(), true).replace("%", "%%")));
 		else

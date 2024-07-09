@@ -62,6 +62,9 @@ public class GrowlToaster extends AbstractToaster {
 	 */
 	public GrowlToaster(ToasterSettings configuration) {
 		super(configuration);
+        if(!System.getProperty("os.name").toLowerCase().contains("mac os")) {
+            throw new UnsupportedOperationException();
+        }
 		capabilities.addAll(Arrays.asList(Capability.IMAGES));
 		try {
 			engine = new ScriptEngineManager().getEngineByName("AppleScript");

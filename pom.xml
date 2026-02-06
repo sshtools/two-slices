@@ -19,7 +19,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sshtools</groupId>
 	<artifactId>two-slices-group</artifactId>
-    <version>0.9.5-SNAPSHOT</version>
+    <version>0.9.5</version>
 	<name>Native Popups</name>
 	<packaging>pom</packaging>
 	<properties>
@@ -34,16 +34,6 @@
 
 	<inceptionYear>2018</inceptionYear>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh-sshtools</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh-sshtools</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
 	<licenses>
 		<license>
 			<name>Apache License Version 2.0</name>
@@ -116,7 +106,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-gpg-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.2.8</version>
 					<executions>
 						<execution>
 							<id>sign-artifacts</id>
@@ -154,19 +144,23 @@
 					</executions>
 				</plugin>
 				<plugin>
-					<groupId>org.sonatype.plugins</groupId>
-					<artifactId>nexus-staging-maven-plugin</artifactId>
-					<version>1.6.13</version>
-					<extensions>true</extensions>
-					<configuration>
-						<serverId>ossrh-sshtools</serverId>
-						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-						<autoReleaseAfterClose>true</autoReleaseAfterClose>
-					</configuration>
-				</plugin>
+	          		<groupId>org.sonatype.central</groupId>
+	          		<artifactId>central-publishing-maven-plugin</artifactId>
+	          		<version>0.8.0</version>
+	          		<extensions>true</extensions>
+	          		<configuration>
+	          		    <autoPublish>true</autoPublish>
+	          		    <waitUntil>published</waitUntil>
+	            		<publishingServerId>central-sshtools</publishingServerId>
+	          		</configuration>
+	        	</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
+			<plugin>
+          		<groupId>org.sonatype.central</groupId>
+          		<artifactId>central-publishing-maven-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>properties-maven-plugin</artifactId>
@@ -277,16 +271,10 @@
 								</goals>
 							</execution>
 						</executions>
-						<configuration>
-							<gpgArguments>
-								<gpgArgument>--pinentry-mode</gpgArgument>
-								<gpgArgument>loopback</gpgArgument>
-							</gpgArguments>
-						</configuration>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
+		          		<groupId>org.sonatype.central</groupId>
+		          		<artifactId>central-publishing-maven-plugin</artifactId>
 					</plugin>
 				</plugins>
 			</build>

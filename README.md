@@ -68,7 +68,7 @@ build system you use. For example, for Maven itself :-
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>two-slices</artifactId>
-			<version>0.9.4</version>
+			<version>0.9.6</version>
 		</dependency>
 	</dependencies>
 ```
@@ -98,7 +98,7 @@ build system you use. For example, for Maven itself :-
 	<dependency>
 		<groupId>com.sshtools</groupId>
 		<artifactId>two-slices</artifactId>
-		<version>0.9.5-SNAPSHOT</version>
+		<version>0.9.7-SNAPSHOT</version>
 	</dependency>
 </dependencies>
 ```

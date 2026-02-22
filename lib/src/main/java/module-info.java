@@ -30,6 +30,8 @@ module com.sshtools.twoslices {
 	exports com.sshtools.twoslices;
 
 	uses ToasterService;
+	
+	exports com.sshtools.twoslices.impl to org.freedesktop.dbus;
 
 	provides ToasterService
 			with com.sshtools.twoslices.impl.GNTPToaster.Service, 

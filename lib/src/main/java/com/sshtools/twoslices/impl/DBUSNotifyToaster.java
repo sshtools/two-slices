@@ -42,6 +42,7 @@ import com.sshtools.twoslices.Slice;
 import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastBuilder;
 import com.sshtools.twoslices.ToastBuilder.ToastAction;
+import com.sshtools.twoslices.ToastReplyListener;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
 import com.sshtools.twoslices.ToasterSettings;
@@ -111,17 +112,42 @@ public class DBUSNotifyToaster extends AbstractToaster {
 
 		}
 
+		@Reflectable
+		@TypeReflect(methods = true, constructors = true)
+		public class NotificationReplied extends DBusSignal {
+
+			private UInt32 id;
+			private String text;
+
+			public NotificationReplied(String path, UInt32 id, String text) throws DBusException {
+				super(path);
+				this.id = id;
+				this.text = text;
+			}
+
+			public UInt32 getId() {
+				return id;
+			}
+
+			public String getText() {
+				return text;
+			}
+
+		}
+
 	}
 
 	private DBusConnection conn;
 	private Notifications notifications;
 	private Map<UInt32, ActiveNotification> actives = new HashMap<>();
+	private boolean inlineReplySupported;
 
 	class ActiveNotification implements Slice {
 		List<ToastAction> actions;
 		ToastAction defaultAction;
 		UInt32 id;
 		ToastActionListener closed;
+		ToastReplyListener replyListener;
 		public boolean destroyed;
 		Set<Path> tempImagePath = new LinkedHashSet<>();
 		
@@ -153,6 +179,26 @@ public class DBUSNotifyToaster extends AbstractToaster {
 
 			notifications = conn.getRemoteObject("org.freedesktop.Notifications", "/org/freedesktop/Notifications",
 					Notifications.class);
+
+			try {
+				var caps = notifications.GetCapabilities();
+				if (caps != null && Arrays.asList(caps).contains("inline-reply")) {
+					inlineReplySupported = true;
+					capabilities.add(Capability.INPUT);
+				}
+			} catch (RuntimeException e) {
+				/* server does not advertise capabilities; assume no inline reply */
+			}
+
+			conn.addSigHandler(Notifications.NotificationReplied.class, notifications, (s) -> {
+				ActiveNotification active;
+				synchronized (actives) {
+					active = actives.get(s.id);
+				}
+				if (active != null && active.replyListener != null) {
+					active.replyListener.reply(s.text);
+				}
+			});
 
 			conn.addSigHandler(Notifications.ActionInvoked.class, notifications, (s) -> {
 				ActiveNotification active = null;
@@ -249,9 +295,20 @@ public class DBUSNotifyToaster extends AbstractToaster {
 			actions.add("default");
 			actions.add(builder.defaultAction().displayName());
 		}
+		ToastReplyListener replyListener = null;
 		for (var a : toastActions) {
-			actions.add(a.name());
-			actions.add(a.displayName());
+			if (a.input()) {
+				if (inlineReplySupported) {
+					/* freedesktop inline-reply: the action key must be "inline-reply" */
+					actions.add("inline-reply");
+					actions.add(a.displayName());
+					replyListener = a.replyListener();
+				}
+				/* else: server has no inline-reply, omit rather than show a dead button */
+			} else {
+				actions.add(a.name());
+				actions.add(a.displayName());
+			}
 		}
 		var active = new ActiveNotification();
 		active.tempImagePath.addAll(tempImagePaths);
@@ -266,6 +323,7 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		active.actions = toastActions;
 		active.closed = builder.closed();
 		active.defaultAction = builder.defaultAction();
+		active.replyListener = replyListener;
 		
 		this.actives.put(active.id, active);
 		

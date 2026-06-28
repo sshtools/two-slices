@@ -43,6 +43,9 @@ public class ToastBuilder {
 		private String label;
 		private String icon;
 		private ToastActionListener listener;
+		private boolean input;
+		private String prompt;
+		private ToastReplyListener replyListener;
 
 		ToastAction(String name) {
 			this(name, name);
@@ -125,6 +128,69 @@ public class ToastBuilder {
 		 */
 		public ToastActionListener listener() {
 			return listener;
+		}
+
+		/**
+		 * Get whether this action presents an inline text input / reply field.
+		 * Only honoured by toasters with {@link Capability#INPUT}.
+		 *
+		 * @return input
+		 */
+		public boolean input() {
+			return input;
+		}
+
+		/**
+		 * Set whether this action presents an inline text input / reply field.
+		 *
+		 * @param input input
+		 * @return this for chaining
+		 */
+		public ToastAction input(boolean input) {
+			this.input = input;
+			return this;
+		}
+
+		/**
+		 * Get the prompt (placeholder) text shown in an {@link #input()} field.
+		 *
+		 * @return prompt
+		 */
+		public String prompt() {
+			return prompt;
+		}
+
+		/**
+		 * Set the prompt (placeholder) text shown in an {@link #input()} field.
+		 *
+		 * @param prompt prompt
+		 * @return this for chaining
+		 */
+		public ToastAction prompt(String prompt) {
+			this.prompt = prompt;
+			return this;
+		}
+
+		/**
+		 * Get the reply listener invoked with the typed text for an
+		 * {@link #input()} action.
+		 *
+		 * @return reply listener
+		 */
+		public ToastReplyListener replyListener() {
+			return replyListener;
+		}
+
+		/**
+		 * Set the reply listener invoked with the typed text for an
+		 * {@link #input()} action.
+		 *
+		 * @param replyListener reply listener
+		 * @return this for chaining
+		 */
+		public ToastAction replyListener(ToastReplyListener replyListener) {
+			this.replyListener = replyListener;
+			return this;
 		}
 
 		/**
@@ -482,6 +548,22 @@ public class ToastBuilder {
 	 */
 	public ToastBuilder action(String name, String label, ToastActionListener listener) {
 		newAction(name).label(label).listener(listener);
+		return this;
+	}
+
+	/**
+	 * Convenience method to add an inline reply / text input action. Only
+	 * honoured by toasters that have {@link Capability#INPUT}; other toasters
+	 * will treat it as (or ignore it like) an ordinary action.
+	 *
+	 * @param name     name
+	 * @param label    label
+	 * @param prompt   prompt (placeholder) text, may be <code>null</code>
+	 * @param listener reply listener invoked with the typed text
+	 * @return this for chaining
+	 */
+	public ToastBuilder input(String name, String label, String prompt, ToastReplyListener listener) {
+		newAction(name).label(label).input(true).prompt(prompt).replyListener(listener);
 		return this;
 	}
 

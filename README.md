@@ -324,3 +324,14 @@ new ToasterFactory() {
 ### Your Custom Toast
 
 Just call `Toast.toast` as you normally would.
+
+
+## Changes
+
+### 0.9.7
+
+ * Added *Inline Replies* support for some platforms that have this ability. Currently `NotificationCenterToaster` (MacOS) and `DBUSNotifyToaster` (Linux, some Desktops)
+   
+## Credits
+
+ * Thanks to [https://github.com/larrasket](larrasket) for support for *Inline Replies*.

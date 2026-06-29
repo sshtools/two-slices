@@ -16,26 +16,17 @@
 package com.sshtools.twoslices;
 
 /**
- * For querying capabilities a {@link Toaster} has.
+ * Interface defining the callback invoked when the user submits text into an
+ * inline reply / input field on a notification. Only toasters that have
+ * {@link Capability#INPUT} support this; on others an input action behaves as
+ * (or is ignored like) an ordinary action.
  */
-public enum Capability {
-
+@FunctionalInterface
+public interface ToastReplyListener {
 	/**
-	 * Supports multiple actions (likely limited)
+	 * Called when the user submits an inline reply.
+	 *
+	 * @param text the text the user entered
 	 */
-	ACTIONS,
-	/**
-	 * Supports a default action (e.g. clicking the message)
-	 */
-	DEFAULT_ACTION,
-	/**
-	 * Messages can be closed programmatically via {@link Slice#close()}.
-	 */
-	CLOSE, IMAGES,
-	/**
-	 * Supports an inline text reply / input field on a notification. The text
-	 * the user types is delivered to a {@link ToastReplyListener} set on an
-	 * input action (see {@link ToastBuilder#input}).
-	 */
-	INPUT
+	void reply(String text);
 }

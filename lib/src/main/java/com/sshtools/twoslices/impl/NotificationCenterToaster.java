@@ -26,12 +26,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.sshtools.twoslices.AbstractToaster;
 import com.sshtools.twoslices.BasicToastHint;
 import com.sshtools.twoslices.Capability;
 import com.sshtools.twoslices.Slice;
+import com.sshtools.twoslices.ToastActionListener;
 import com.sshtools.twoslices.ToastBuilder;
+import com.sshtools.twoslices.ToastReplyListener;
 import com.sshtools.twoslices.ToastType;
 import com.sshtools.twoslices.Toaster;
 import com.sshtools.twoslices.ToasterService;
@@ -879,7 +882,7 @@ public class NotificationCenterToaster extends AbstractToaster {
 		if(osVersion.compareTo(minVersion) < 0) {
 			throw new UnsupportedOperationException();
 		}
-		capabilities.addAll(Arrays.asList(Capability.IMAGES, Capability.ACTIONS, Capability.CLOSE));
+		capabilities.addAll(Arrays.asList(Capability.IMAGES, Capability.ACTIONS, Capability.CLOSE, Capability.DEFAULT_ACTION, Capability.INPUT));
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -900,27 +903,121 @@ public class NotificationCenterToaster extends AbstractToaster {
 		Foundation.invoke(notification, "setInformativeText:",
 				Foundation.nsString(StringUtil.stripHtml(builder.content(), true).replace("%", "%%")));
 		
-		var actions = builder.actions();
-		if(actions.size() > 0) {
-			Foundation.invoke(notification, "setHasActionButton:", true);	
+		installDelegate();
+		var buttonActions = new ArrayList<ToastBuilder.ToastAction>();
+		ToastBuilder.ToastAction inputAction = null;
+		for (var a : builder.actions()) {
+			if (a.input() && inputAction == null)
+				inputAction = a;
+			else
+				buttonActions.add(a);
+		}
+		if (!buttonActions.isEmpty()) {
+			Foundation.invoke(notification, "setHasActionButton:", true);
 			Foundation.invoke(notification, "setActionButtonTitle:",
-					Foundation.nsString(actions.get(0).displayName()));	
-			if(actions.size() > 1) {
+					Foundation.nsString(buttonActions.get(0).displayName()));
+			if (buttonActions.size() > 1) {
 				Foundation.invoke(notification, "setOtherButtonTitle:",
-						Foundation.nsString(actions.get(1).displayName()));
+						Foundation.nsString(buttonActions.get(1).displayName()));
 			}
 		}
-		
+		if (inputAction != null) {
+			Foundation.invoke(notification, "setHasReplyButton:", true);
+			if (inputAction.prompt() != null)
+				Foundation.invoke(notification, "setResponsePlaceholder:", Foundation.nsString(inputAction.prompt()));
+		}
+
+		var id = UUID.randomUUID().toString();
+		Foundation.invoke(notification, "setIdentifier:", Foundation.nsString(id));
+		var listeners = new ActiveListeners();
+		listeners.buttonActions = buttonActions;
+		listeners.defaultAction = builder.defaultAction();
+		listeners.replyListener = inputAction == null ? null : inputAction.replyListener();
+		listeners.closed = builder.closed();
+		listenersById.put(id, listeners);
+
 		final ID center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
 				"defaultUserNotificationCenter");
 		Foundation.invoke(center, "deliverNotification:", notification);
-		
+
 		return new Slice() {
 			@Override
 			public void close() throws IOException {
-				Foundation.invoke(notification, "removeDeliveredNotification:", notification);	
+				listenersById.remove(id);
+				Foundation.invoke(center, "removeDeliveredNotification:", notification);
 			}
 		};
+	}
+
+	private static final Map<String, ActiveListeners> listenersById = new ConcurrentHashMap<>();
+	private static Callback delegateCallback;
+	private static ID delegateInstance;
+	private static final Object DELEGATE_LOCK = new Object();
+
+	private static class ActiveListeners {
+		List<ToastBuilder.ToastAction> buttonActions = Collections.emptyList();
+		ToastBuilder.ToastAction defaultAction;
+		ToastReplyListener replyListener;
+		ToastActionListener closed;
+	}
+
+	private static void installDelegate() {
+		synchronized (DELEGATE_LOCK) {
+			if (delegateInstance != null)
+				return;
+			var delegateClass = Foundation.allocateObjcClassPair(Foundation.getObjcClass("NSObject"),
+					"TwoSlicesUserNotificationDelegate");
+			Foundation.registerObjcClassPair(delegateClass);
+			var cb = new Callback() {
+				@SuppressWarnings("unused")
+				public void callback(ID self, String selector, ID center, ID notification) {
+					handleActivation(notification);
+				}
+			};
+			if (!Foundation.addMethod(delegateClass,
+					Foundation.createSelector("userNotificationCenter:didActivateNotification:"), cb, "v@:@@")) {
+				throw new RuntimeException("Unable to add delegate method to TwoSlicesUserNotificationDelegate");
+			}
+			delegateCallback = cb;
+			delegateInstance = Foundation.invoke(Foundation.invoke(delegateClass, "alloc"), "init");
+			var center = Foundation.invoke(Foundation.getObjcClass("NSUserNotificationCenter"),
+					"defaultUserNotificationCenter");
+			Foundation.invoke(center, "setDelegate:", delegateInstance);
+		}
+	}
+
+	private static void handleActivation(ID notification) {
+		try {
+			var id = Foundation.toStringViaUTF8(Foundation.invoke(notification, "identifier"));
+			if (id == null)
+				return;
+			var listeners = listenersById.remove(id);
+			if (listeners == null)
+				return;
+			var activationType = Foundation.invoke(notification, "activationType").intValue();
+			switch (activationType) {
+			case 1: /* NSUserNotificationActivationTypeContentsClicked */
+				if (listeners.defaultAction != null && listeners.defaultAction.listener() != null)
+					listeners.defaultAction.listener().action();
+				break;
+			case 2: /* NSUserNotificationActivationTypeActionButtonClicked */
+				if (!listeners.buttonActions.isEmpty() && listeners.buttonActions.get(0).listener() != null)
+					listeners.buttonActions.get(0).listener().action();
+				break;
+			case 3: /* NSUserNotificationActivationTypeReplied */
+				if (listeners.replyListener != null) {
+					var text = Foundation.toStringViaUTF8(Foundation.invoke(Foundation.invoke(notification, "response"), "string"));
+					listeners.replyListener.reply(text == null ? "" : text);
+				}
+				break;
+			default:
+				break;
+			}
+			if (listeners.closed != null)
+				listeners.closed.action();
+		} catch (Throwable t) {
+			/* never let an exception cross the native callback boundary */
+		}
 	}
 
 	private static void cleanupDeliveredNotifications() {

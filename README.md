@@ -328,6 +328,11 @@ Just call `Toast.toast` as you normally would.
 
 ## Changes
 
+### 0.9.8
+
+ * `Slice.close()` now idempotent, so calling it multiple times will not cause any issues. Fixes [https://github.com/sshtools/two-slices/issues/6](#6)
+ * Removed the long deprectated scripted Growl service on Mac OS. GNTP is still available and supported on all platforms. Fixes [https://github.com/sshtools/two-slices/issues/3](#3) 
+
 ### 0.9.7
 
  * Added *Inline Replies* support for some platforms that have this ability. Currently `NotificationCenterToaster` (MacOS) and `DBUSNotifyToaster` (Linux, some Desktops)

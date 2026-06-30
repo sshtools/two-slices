@@ -36,7 +36,6 @@ module com.sshtools.twoslices {
 
 	provides ToasterService
 			with com.sshtools.twoslices.impl.GNTPToaster.Service, 
-			com.sshtools.twoslices.impl.GrowlToaster.Service, 
 			com.sshtools.twoslices.impl.DBUSNotifyToaster.Service,
 			com.sshtools.twoslices.impl.NotifyToaster.Service,
 			com.sshtools.twoslices.impl.JavaFXToaster.Service,

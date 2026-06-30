@@ -30,7 +30,6 @@ public interface Slice extends Closeable {
 		return new Slice() {
 			@Override
 			public void close() throws IOException {
-				throw new UnsupportedOperationException();
 			}
 		};
 	};

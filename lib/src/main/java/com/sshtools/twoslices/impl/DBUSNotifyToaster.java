@@ -148,12 +148,13 @@ public class DBUSNotifyToaster extends AbstractToaster {
 		UInt32 id;
 		ToastActionListener closed;
 		ToastReplyListener replyListener;
-		public boolean destroyed;
+		boolean destroyed;
 		Set<Path> tempImagePath = new LinkedHashSet<>();
 		
 		@Override
 		public void close() throws IOException {
 			if(!destroyed) {
+				destroyed = true;
 				notifications.CloseNotification(id.intValue());
 			}
 		}

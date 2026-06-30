@@ -130,6 +130,7 @@ public class JavaFXToaster extends AbstractToaster {
 		
 		private String title;
 		private String content;
+		private boolean closed;
 
 		JavaFXSlice(String title, String content) {
 			this.title = title;
@@ -138,6 +139,10 @@ public class JavaFXToaster extends AbstractToaster {
 		
 		@Override
 		public void close() throws IOException {
+			if(closed)
+				return;
+			
+			closed = true;
 			findPopup(title, content).hide();
 		}
 		

@@ -184,6 +184,7 @@ public class SWTToaster extends AbstractToaster {
 		private Thread timerThread;
 		private Thread swtThread;
 		private ToastAction defaultAction;
+		private boolean isClosed;
 		private final String icon;
 		private final ToastType type;
 		private final String image;
@@ -626,8 +627,9 @@ public class SWTToaster extends AbstractToaster {
 				timerThread.interrupt();
 				timerThread = null;
 			}
-			if (swtThread == null)
+			if (swtThread == null || isClosed)
 				return;
+			isClosed = true;
 			if (Thread.currentThread() != swtThread)
 				display.asyncExec(() -> doClose());
 			else

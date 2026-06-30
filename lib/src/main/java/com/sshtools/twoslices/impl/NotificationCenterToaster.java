@@ -941,8 +941,14 @@ public class NotificationCenterToaster extends AbstractToaster {
 		Foundation.invoke(center, "deliverNotification:", notification);
 
 		return new Slice() {
+			private boolean closed;
+
 			@Override
 			public void close() throws IOException {
+				if(closed) {
+					return;
+				}
+				closed = true;
 				listenersById.remove(id);
 				Foundation.invoke(center, "removeDeliveredNotification:", notification);
 			}
